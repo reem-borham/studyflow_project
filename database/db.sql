@@ -32,14 +32,7 @@ CREATE TABLE tags (
     name TEXT UNIQUE NOT NULL
 );
 
--- Many-to-many relationship between posts and tags
-CREATE TABLE post_tags (
-    post_id INTEGER NOT NULL,
-    tag_id INTEGER NOT NULL,
-    PRIMARY KEY (post_id, tag_id),
-    FOREIGN KEY (post_id) REFERENCES posts(id),
-    FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
+
 
 -- ============================
 -- POSTS & COMMENTS
