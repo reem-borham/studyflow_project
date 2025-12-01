@@ -25,10 +25,7 @@ CREATE TABLE user_permissions (
 -- CATEGORIES & TAGS
 -- ============================
 
-CREATE TABLE categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL
-);
+
 
 CREATE TABLE tags (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
