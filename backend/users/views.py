@@ -79,7 +79,8 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
 import json
-from .models import User  # Capital U - class name
+from .models import User 
+import time
 
 @csrf_exempt
 def login(request):
@@ -162,3 +163,64 @@ def signup(request):
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"error": "Use POST method"}, status=400)
+
+
+
+@csrf_exempt
+def test_connection(request):
+    """Simple test endpoint to verify frontend-backend connection"""
+    return JsonResponse({
+        "status": "success",
+        "message": "Django backend is running!",
+        "frontend_url": "http://localhost:3000",
+        "backend_url": "http://localhost:8000",
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+@csrf_exempt 
+def test_api(request):
+    """Test API with POST data"""
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            
+            return JsonResponse({
+                "success": True,
+                "message": "API test successful!",
+                "received_data": data,
+                "backend_response": "Your data was received correctly"
+            })
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "error": str(e)
+            }, status=400)
+    
+    # For GET requests
+    return JsonResponse({
+        "message": "Send a POST request with JSON data to test",
+        "example": {
+            "username": "test",
+            "email": "test@example.com"
+        }
+    })
+
+def home(request):
+    
+    """Homepage showing API information"""
+    return JsonResponse({
+        "app": "StudyFlow Backend",
+        "version": "1.0",
+        "status": "running",
+        "endpoints": {
+            "home": "/",
+            "signup": "/api/signup/ (POST)",
+            "login": "/api/login/ (POST)",
+            "test": "/api/test/ (GET)",
+            "test_api": "/api/test-api/ (POST)",
+            "admin": "/admin/"
+        },
+        "frontend": "http://localhost:3000",
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    })
