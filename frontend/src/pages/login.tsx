@@ -1,6 +1,6 @@
 import React from "react";
 import Form from "../components/FormSign";
-import "./SIgninPage.css"; 
+import "./login.css"; 
 
 const SigninPage: React.FC = () => {
   return (

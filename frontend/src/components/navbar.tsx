@@ -9,7 +9,7 @@ const Navbar = () => {
         <a href="/login" className="login-link">
           Login
         </a>
-        <a href="/signin" className="signin-link">
+        <a href="/Register" className="signin-link">
           Sign In
         </a>
         <div className="SearchContainer">
