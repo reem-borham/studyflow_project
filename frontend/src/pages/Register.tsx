@@ -1,9 +1,9 @@
 // src/pages/LoginPage.tsx
 import React from "react";
 import Form from "../components/Form";
-import "./LoginPage.css"; 
+import "./Register.css"; 
 
-const LoginPage: React.FC = () => {
+const Register: React.FC = () => {
   return (
 
     <div className="background">
@@ -22,5 +22,5 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default Register;
 
