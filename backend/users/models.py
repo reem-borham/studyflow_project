@@ -20,10 +20,10 @@ class User(models.Model):
     username = models.TextField(unique=True)
     email = models.TextField(unique=True)
     password_hash = models.TextField()
-    role = models.TextField(default="user")  # user, admin, moderator
+    role = models.TextField(default="user")  
     bio = models.TextField(null=True, blank=True)
     is_banned = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "users"   # IMPORTANT: tells Django to use your existing table
+        db_table = "users"   

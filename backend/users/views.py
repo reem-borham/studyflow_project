@@ -17,8 +17,8 @@ def login(request):
 
             # Lookup user by email
             try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
+                user = user.objects.get(email=email)
+            except user.DoesNotExist:
                 return JsonResponse({"success": False, "error": "User not found"}, status=404)
 
             # Compare with stored password_hash
@@ -54,7 +54,7 @@ def signup(request):
             if not username or not email or not password:
                 return JsonResponse({"success": False, "error": "Missing fields"}, status=400)
 
-            user = User.objects.create(
+            user = user.objects.create(
                 username=username,
                 email=email,
                 password_hash=password,
