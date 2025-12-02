@@ -1,57 +1,76 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
 import json
-from .models import Student, Instructor
+from .models import user
+
+
+@csrf_exempt
+def login(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            email = data.get("email")
+            password = data.get("password")  # plain password
+            if not email or not password:
+                return JsonResponse({"success": False, "error": "Email and password are required"}, status=400)
+
+            # Lookup user by email
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({"success": False, "error": "User not found"}, status=404)
+
+            # Compare with stored password_hash
+            # (since your db.sql stores "password_hash")
+            if user.password_hash != password:
+                return JsonResponse({"success": False, "error": "Invalid password"}, status=401)
+
+            return JsonResponse({
+                "success": True,
+                "message": "Login successful",
+                "user_id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+            })
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Use POST method"}, status=400)
 
 @csrf_exempt
 def signup(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            # Get data from Next.js
             data = json.loads(request.body)
-            
-            # Get user_type from data (default to 'student')
-            user_type = data.get('user_type', 'student')
-            
-            # Check if user_type is valid
-            if user_type not in ['student', 'instructor']:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'user_type must be "student" or "instructor"'
-                }, status=400)
-            
-            # Create user based on type
-            if user_type == 'student':
-                user = Student.objects.create(
-                    name=data['name'],
-                    email=data['email'],
-                    password=data['password']
-                )
-                message = 'Student created successfully!'
-            else:  # instructor
-                user = Instructor.objects.create(
-                    name=data['name'],
-                    email=data['email'],
-                    password=data['password']
-                )
-                message = 'Instructor created successfully!'
-            
-            # Send response back
+
+            username = data.get("username")
+            email = data.get("email")
+            password = data.get("password")  # plain password or hash it yourself
+            role = data.get("role", "user")
+
+            if not username or not email or not password:
+                return JsonResponse({"success": False, "error": "Missing fields"}, status=400)
+
+            user = User.objects.create(
+                username=username,
+                email=email,
+                password_hash=password,
+                role=role
+            )
+
             return JsonResponse({
-                'success': True,
-                'message': message,
-                'user_type': user_type,
-                'user_id': user.id,
-                'name': user.name,
-                'email': user.email
+                "success": True,
+                "message": "Account created successfully",
+                "user_id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
             })
-        
+
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=400)
-    
-    return JsonResponse({
-        'error': 'Use POST method'
-    }, status=400)
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Use POST method"}, status=400)
