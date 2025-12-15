@@ -19,8 +19,7 @@ class User(AbstractUser):
 
     ROLE_CHOICES = [
         ('student', 'Student'),
-        ('instructor', 'Instructor'),
-        ('admin', 'Administrator'),
+        ('instructor', 'Instructor')
     ]
 
     # User role in the system
