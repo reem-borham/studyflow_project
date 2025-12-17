@@ -36,8 +36,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
-    'core',
+    
+    # Your custom apps (MUST BE IN THIS ORDER for dependencies)
+    'users',      # User model (base)
+    'core',       # Shared models (depends on users)
+    'questions',  # Questions (depends on users and core)
+    'answers',    # Answers (depends on users, core, and questions)
 ]
 
 AUTH_USER_MODEL = 'users.User'
