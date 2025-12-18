@@ -1,57 +1,36 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt 
-import json
-from .models import User
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 
-@csrf_exempt
-def signup(request):
-    if request.method == 'POST':
-        try:
-            # Get data from Next.js
-            data = json.loads(request.body)
-            
-            # Get user_type from data (default to 'student')
-            user_type = data.get('user_type', 'student')
-            
-            # Check if user_type is valid
-            if user_type not in ['student', 'instructor']:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'user_type must be "student" or "instructor"'
-                }, status=400)
-            
-            # Create user based on type
-            if user_type == 'student':
-                user = Student.objects.create(
-                    name=data['name'],
-                    email=data['email'],
-                    password=data['password']
-                )
-                message = 'Student created successfully!'
-            else:  # instructor
-                user = Instructor.objects.create(
-                    name=data['name'],
-                    email=data['email'],
-                    password=data['password']
-                )
-                message = 'Instructor created successfully!'
-            
-            # Send response back
-            return JsonResponse({
-                'success': True,
-                'message': message,
-                'user_type': user_type,
-                'user_id': user.id,
-                'name': user.name,
-                'email': user.email
-            })
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token, created = Token.objects.get_or_create(user=user)
         
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=400)
-    
-    return JsonResponse({
-        'error': 'Use POST method'
-    }, status=400)
+        return Response({
+            "token": token.key,
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = LoginSerializer # Helpful for docs
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            "token": token.key,
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
