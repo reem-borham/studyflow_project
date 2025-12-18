@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 
 # =====================================================
-# TAGS MODEL
+# TAGS MODEL 
 # =====================================================
 class Tag(models.Model):
     """
