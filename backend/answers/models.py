@@ -19,7 +19,7 @@ class Answer(models.Model):
     votes = GenericRelation('core.Vote', related_query_name='answer')
     comments = GenericRelation('core.Comment', related_query_name='answer')
     reports = GenericRelation('core.Report', related_query_name='answer')
-    bookmarks = GenericRelation('core.Bookmark', related_query_name='answer')
+    
     
     class Meta:
         ordering = ['-is_best_answer', '-created_at']
