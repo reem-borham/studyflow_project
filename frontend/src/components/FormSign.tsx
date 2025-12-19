@@ -1,20 +1,86 @@
+import { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+
+  // Explicit handler for username since type might be ambiguous in the generic handler above if we had more fields
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, username: e.target.value }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, password: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Store token if your backend returns one, e.g., localStorage.setItem('token', data.token);
+        // For now, just redirecting
+        console.log('Login successful', data);
+        navigate('/user');
+      } else {
+        const data = await response.json();
+        // data might be { non_field_errors: [...] } or other structure
+        const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Login failed';
+        setError(errorMessage);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Something went wrong. Please try again.');
+    }
+  };
+
   return (
     <StyledWrapper>
-      <form className="form">
+      <form className="form" onSubmit={handleSubmit}>
         <p className="title">Sign in </p>
+
+        {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>{error}</p>}
+
         <div className="flex">
           <label>
-            <input className="input" type="text" placeholder=" " required />
+            <input
+              className="input"
+              type="text"
+              placeholder=" "
+              required
+              value={formData.username}
+              onChange={handleUsernameChange}
+            />
             <span>Username</span>
           </label>
           <label>
-            <input className="input" type="password" placeholder=" " required />
+            <input
+              className="input"
+              type="password"
+              placeholder=" "
+              required
+              value={formData.password}
+              onChange={handlePasswordChange}
+            />
             <span>Password</span>
           </label>
-        </div>  
+        </div>
         <button className="submit">Sign in</button>
       </form>
     </StyledWrapper>

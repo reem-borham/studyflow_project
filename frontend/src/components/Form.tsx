@@ -1,35 +1,151 @@
+import { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+          password: formData.password,
+          role: 'student' // Default role
+        }),
+      });
+
+      if (response.ok) {
+        // Registration successful
+        alert('Registration successful! Please login.');
+        navigate('/login');
+      } else {
+        const data = await response.json();
+        const errorMessage = Object.values(data).flat().join(' ');
+        setError(errorMessage || 'Registration failed');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Something went wrong. Please try again.');
+    }
+  };
+
   return (
     <StyledWrapper>
-      <form className="form">
+      <form className="form" onSubmit={handleSubmit}>
         <p className="title">Register </p>
         <p className="message">Signup now and get full access to our app. </p>
+
+        {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>{error}</p>}
+
+        <label>
+          <input
+            className="input"
+            type="text"
+            name="username"
+            placeholder=" "
+            required
+            value={formData.username}
+            onChange={handleChange}
+          />
+          <span>Username</span>
+        </label>
+
         <div className="flex">
           <label>
-            <input className="input" type="text" placeholder=" " required />
+            <input
+              className="input"
+              type="text"
+              name="first_name"
+              placeholder=" "
+              required
+              value={formData.first_name}
+              onChange={handleChange}
+            />
             <span>Firstname</span>
           </label>
           <label>
-            <input className="input" type="text" placeholder=" " required />
+            <input
+              className="input"
+              type="text"
+              name="last_name"
+              placeholder=" "
+              required
+              value={formData.last_name}
+              onChange={handleChange}
+            />
             <span>Lastname</span>
           </label>
-        </div>  
+        </div>
         <label>
-          <input className="input" type="email" placeholder=" " required />
+          <input
+            className="input"
+            type="email"
+            name="email"
+            placeholder=" "
+            required
+            value={formData.email}
+            onChange={handleChange}
+          />
           <span>Email</span>
-        </label> 
+        </label>
         <label>
-          <input className="input" type="password" placeholder=" " required />
+          <input
+            className="input"
+            type="password"
+            name="password"
+            placeholder=" "
+            required
+            value={formData.password}
+            onChange={handleChange}
+          />
           <span>Password</span>
         </label>
         <label>
-          <input className="input" type="password" placeholder=" " required />
+          <input
+            className="input"
+            type="password"
+            name="confirmPassword"
+            placeholder=" "
+            required
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
           <span>Confirm password</span>
         </label>
         <button className="submit">Submit</button>
-        <p className="signin">Already have an acount ? <a href="#">Signin</a> </p>
+        <p className="signin">Already have an acount ? <a href="/login">Signin</a> </p>
       </form>
     </StyledWrapper>
   );
@@ -179,4 +295,3 @@ const StyledWrapper = styled.div`
   }`;
 
 export default Form;
-

@@ -1,0 +1,56 @@
+.user.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 50px;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s;
+}
+
+.avatar:hover {
+  border-color: #1c75db;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar span {
+  color: #888;
+  font-weight: 500;
+}
+
+button {
+  padding: 10px 24px;
+  background-color: #1c75db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #155bb5;
+}
+
+h2 {
+  color: #333;
+}
