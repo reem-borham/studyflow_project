@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/', include('users.urls')),
     path('api/questions/', include('questions.urls')),
     path('api/answers/', include('answers.urls')),
+    path('api/notifications/', include('core.urls')),
 ]
 
