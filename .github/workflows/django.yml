@@ -30,9 +30,9 @@ jobs:
         pip install -r requirements.txt
         
     - name: Run Tests
-      # This runs our new users/tests.py
+      # Runs all tests in the project (users + core + questions + ...)
       # The settings.py automatically uses SQLite here because
       # COMPUTERNAME is not SARAHSHINNAWY
       run: |
         cd backend
-        python manage.py test users
+        python manage.py test
