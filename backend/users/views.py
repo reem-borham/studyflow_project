@@ -2,8 +2,12 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.contenttypes.models import ContentType
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from questions.models import Question
+from answers.models import Answer
+from core.models import Vote
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -34,3 +38,56 @@ class LoginView(APIView):
             "token": token.key,
             "user": UserSerializer(user).data
         }, status=status.HTTP_200_OK)
+
+class UserDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # 1. Questions Count
+        questions_count = Question.objects.filter(user=user).count()
+        
+        # 2. Answers Count
+        answers_count = Answer.objects.filter(user=user).count()
+        
+        # 3. Total Reputations (Upvotes - Downvotes)
+        # We need to sum votes on the user's Questions AND Answers
+        
+        # Helper to calculate net votes for a specific model type
+        def get_votes_for_model(model_class, user):
+            ct = ContentType.objects.get_for_model(model_class)
+            # Find IDs of objects owned by user
+            object_ids = model_class.objects.filter(user=user).values_list('id', flat=True)
+            
+            upvotes = Vote.objects.filter(
+                content_type=ct, 
+                object_id__in=object_ids, 
+                vote_type='up'
+            ).count()
+            
+            downvotes = Vote.objects.filter(
+                content_type=ct, 
+                object_id__in=object_ids, 
+                vote_type='down'
+            ).count()
+            
+            return upvotes - downvotes
+
+        question_reputation = get_votes_for_model(Question, user)
+        answer_reputation = get_votes_for_model(Answer, user)
+        
+        total_reputation = question_reputation + answer_reputation
+
+        return Response({
+            "username": user.username,
+            "stats": {
+                "questions_asked": questions_count,
+                "questions_answered": answers_count,
+                "reputation_score": total_reputation,
+                "breakdown": {
+                    "question_votes": question_reputation,
+                    "answer_votes": answer_reputation
+                }
+            }
+        })
