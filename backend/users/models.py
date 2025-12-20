@@ -1,44 +1,34 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
-# class Student(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.EmailField()
-#     password = models.CharField(max_length=100)
+class User(AbstractUser):
+    """
+    Custom User model for StudyFlow platform
+    Uses Django's AbstractUser for better authentication
+    """
     
-#     def __str__(self):
-#         return self.name
+    ROLE_CHOICES = [
+        ('student', 'Student'),
+        ('instructor', 'Instructor'),
+        ('user', 'User'),  # Keep for backwards compatibility
+        ('admin', 'Admin'),
+        ('moderator', 'Moderator'),
+    ]
 
-# class Instructor(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.EmailField()
-#     password = models.CharField(max_length=100)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    registration_date = models.DateTimeField(default=timezone.now)
     
-#     def __str__(self):
-#         return self.name
-
-# class User(models.Model):
-#     username = models.TextField(unique=True)
-#     email = models.TextField(unique=True)
-#     password_hash = models.TextField()
-#     role = models.TextField(default="user")  
-#     bio = models.TextField(null=True, blank=True)
-#     is_banned = models.IntegerField(default=0)
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     class Meta:
-#         db_table = "users"   
-
-class User(models.Model):
-    username = models.TextField(unique=True)
-    email = models.TextField(unique=True)
-    password_hash = models.TextField()
-    role = models.TextField(default="user")  
-    bio = models.TextField(null=True, blank=True)
-    is_banned = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "users"
+    # Profile fields
+    bio = models.TextField(max_length=500, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    is_banned = models.BooleanField(default=False)
     
     def __str__(self):
         return self.username
+    
+    def is_student(self):
+        return self.role == 'student'
+    
+    def is_instructor(self):
+        return self.role == 'instructor'

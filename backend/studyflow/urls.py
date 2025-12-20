@@ -20,6 +20,9 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('users.urls')), 
     path('admin/', admin.site.urls),
-     path('api/', include('users.urls')), 
+    path('api/', include('users.urls')),
+    path('api/questions/', include('questions.urls')),
+    path('api/answers/', include('answers.urls')),
+    path('api/notifications/', include('core.urls')),
+    path('api/core/', include('core.urls')),  # For tags and voting
 ]
-

@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,11 @@ SECRET_KEY = 'django-insecure-hr97pql9^1i8%z6mqa=q5y_-g=j(9&s$y-(io*3w$+m-rc879d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1']
+
+# Custom User Model
+AUTH_USER_MODEL = 'users.User'
+
 
 
 # Application definition
@@ -38,8 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
-    "corsheaders",
-    'rest_framework', 
+    'questions',  # Questions app
+    'answers',    # Answers app
+    'core',       # Core app (votes, comments, notifications)
+    'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',  # For token authentication
 ]
 
 MIDDLEWARE = [
@@ -56,9 +65,11 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  
     "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True 
 
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -96,6 +107,18 @@ DATABASES = {
         'NAME': BASE_DIR / "db.sqlite3",
     }
 }
+
+# HACK: Force PostgreSQL only on Sarah's machine to allow teammates to use SQLite
+if os.environ.get('COMPUTERNAME') == 'SARAHSHINNAWY':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'studyflow_db',      # Database you just created
+        'USER': 'postgres',          # PostgreSQL username
+        'PASSWORD': 'Mymomh@d2cats', # PostgreSQL password (NOT pgAdmin password)
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+
 
 
 # Password validation
@@ -141,10 +164,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Allow all for development
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
-
