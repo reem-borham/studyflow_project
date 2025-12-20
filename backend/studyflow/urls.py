@@ -22,6 +22,6 @@ urlpatterns = [
     path('api/', include('users.urls')),
     path('api/posts/', include('questions.urls')),
     path('api/answers/', include('answers.urls')),
-    path('api/notifications/', include('core.urls')),
+    path('api/', include('core.urls')),  # Core features: voting, comments, reports, tags, notifications
 ]
 
