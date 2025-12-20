@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
 from django.contrib.contenttypes.models import ContentType
 from .models import Notification, Tag, Vote, Comment, Report
 from .serializers import NotificationSerializer, TagSerializer, VoteSerializer, CommentSerializer, ReportSerializer
@@ -201,13 +202,13 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         # Only allow comment owner to update
         if serializer.instance.user != self.request.user:
-            raise permissions.PermissionDenied("You can only edit your own comments")
+            raise PermissionDenied("You can only edit your own comments")
         serializer.save()
     
     def perform_destroy(self, instance):
         # Only allow comment owner to delete
         if instance.user != self.request.user:
-            raise permissions.PermissionDenied("You can only delete your own comments")
+            raise PermissionDenied("You can only delete your own comments")
         instance.delete()
 
 # ==================== BEST ANSWER ====================
