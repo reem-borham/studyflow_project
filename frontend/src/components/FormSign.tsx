@@ -34,8 +34,7 @@ const Form = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Store token if your backend returns one, e.g., localStorage.setItem('token', data.token);
-        // For now, just redirecting
+        localStorage.setItem('token', data.token); // Save token
         console.log('Login successful', data);
         navigate('/user');
       } else {
