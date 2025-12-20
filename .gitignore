@@ -10,4 +10,7 @@ venv/
 db.sqlite3
 .DS_Store
 .db
+<<<<<<< HEAD
 
+=======
+>>>>>>> 506e00779679a1b3c4cad2c9b089f64c8d594616
