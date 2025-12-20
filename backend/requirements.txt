@@ -3,3 +3,4 @@ djangorestframework
 Pillow
 psycopg2-binary
 django-cors-headers
+dj_database_url
