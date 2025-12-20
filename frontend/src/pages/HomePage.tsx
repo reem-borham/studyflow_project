@@ -43,7 +43,7 @@ export default function HomePage() {
           <PsychologyAltIcon className="feature-icon" />
           <p>Share Answers</p>
         </div>
-        <div className="feature">
+        <div className="feature" onClick={() => navigate('/explore')} style={{ cursor: 'pointer' }}>
           <ExploreIcon className="feature-icon" />
           <p>Explore Topics</p>
         </div>

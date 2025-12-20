@@ -1,6 +1,8 @@
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 interface CardProps {
+  id?: number;
   title?: string;
   content: string;
   username: string;
@@ -11,9 +13,11 @@ interface CardProps {
   };
 }
 
-const Card = ({ title, content, username, stats }: CardProps) => {
+const Card = ({ id, title, content, username, stats }: CardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <StyledWrapper>
+    <StyledWrapper onClick={() => id && navigate(`/question/${id}`)}>
       <div className="card">
         <div className="card-content">
           {title && <h4 className="title">{title}</h4>}

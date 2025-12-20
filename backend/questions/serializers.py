@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Question
 from core.models import Tag
+from answers.serializers import AnswerSerializer
 
 class QuestionSerializer(serializers.ModelSerializer):
     tags = serializers.ListField(
@@ -10,11 +11,13 @@ class QuestionSerializer(serializers.ModelSerializer):
     )
     # For reading (displaying objects)
     tag_names = serializers.StringRelatedField(many=True, read_only=True, source='tags')
+    answers = AnswerSerializer(many=True, read_only=True)
+    user_username = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = Question
-        fields = ['id', 'title', 'body', 'user', 'tags', 'tag_names', 'created_at', 'views', 'vote_count', 'comment_count']
-        read_only_fields = ['user', 'created_at', 'views']
+        fields = ['id', 'title', 'body', 'user', 'user_username', 'tags', 'tag_names', 'created_at', 'views', 'vote_count', 'comment_count', 'answers']
+        read_only_fields = ['user', 'user_username', 'created_at', 'views']
 
     def create(self, validated_data):
         tags_data = validated_data.pop('tags', [])

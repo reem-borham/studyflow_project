@@ -206,7 +206,7 @@ function UserProfile() {
                   {profile.role === 'instructor' ? 'Instructor' : ' Student'}
                 </span>
               </div>
-    
+
             </>
           )}
         </div>
@@ -267,6 +267,7 @@ function UserProfile() {
             {profile?.questions.map((question) => (
               <Card
                 key={question.id}
+                id={question.id}
                 title={question.title}
                 content={question.body}
                 username={profile.username}
@@ -286,6 +287,7 @@ function UserProfile() {
             {profile?.answers.map((answer) => (
               <Card
                 key={answer.id}
+                id={answer.question}
                 title={`Answer to: ${answer.question_title || '#' + answer.question}`}
                 content={answer.body}
                 username={profile.username}
