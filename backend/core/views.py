@@ -206,7 +206,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ==================== BEST ANSWER ====================
 class MarkBestAnswerView(APIView):
-    """Mark an answer as the best answer (only question author can do this)"""
+    """Mark an answer as the best answer (question author OR instructor can do this)"""
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, answer_id):
@@ -217,10 +217,13 @@ class MarkBestAnswerView(APIView):
         except Answer.DoesNotExist:
             return Response({'error': 'Answer not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        # Check if the user is the question author
-        if answer.question.user != request.user:
+        # Check if user is question author OR instructor
+        is_question_author = answer.question.user == request.user
+        is_instructor = request.user.role == 'instructor'
+        
+        if not (is_question_author or is_instructor):
             return Response(
-                {'error': 'Only the question author can mark best answer'},
+                {'error': 'Only the question author or an instructor can mark best answer'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
@@ -229,7 +232,8 @@ class MarkBestAnswerView(APIView):
         
         return Response({
             'message': 'Answer marked as best',
-            'answer_id': answer.id
+            'answer_id': answer.id,
+            'marked_by': 'instructor' if is_instructor and not is_question_author else 'author'
         }, status=status.HTTP_200_OK)
 
 # ==================== REPORTING ====================
