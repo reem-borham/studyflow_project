@@ -124,6 +124,7 @@ class Notification(models.Model):
     Using Generic Foreign Key for content reference
     """
     NOTIFICATION_TYPE_CHOICES = [
+        ('question', 'New Question Posted'),
         ('answer', 'New Answer'),
         ('comment', 'New Comment'),
         ('vote', 'New Vote'),

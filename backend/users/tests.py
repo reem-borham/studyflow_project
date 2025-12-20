@@ -84,3 +84,19 @@ class AuthenticationTests(APITestCase):
         }
         response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_upload_profile_image(self):
+        # Create a dummy image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        image_content = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x05\x04\x04\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
+        image = SimpleUploadedFile("avatar.gif", image_content, content_type="image/gif")
+        
+        self.client.force_authenticate(user=self.user)
+        url = reverse('upload_profile_image')
+        data = {'profile_picture': image}
+        
+        response = self.client.post(url, data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.profile_picture)
