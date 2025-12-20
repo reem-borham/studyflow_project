@@ -37,6 +37,7 @@ interface Answer {
 interface Profile {
   username: string;
   email: string;
+  role: string;
   profile_picture: string | null;
   questions: Question[];
   answers: Answer[];
@@ -199,10 +200,13 @@ function UserProfile() {
           {profile && (
             <>
               <h2>{profile.username}</h2>
-              <p className="email">{profile.email}</p>
-              <div className="reputation-badge">
-                <span>🏆 {profile.stats.reputation_score} Reputation</span>
+              <div className="user-meta">
+                <p className="email">{profile.email}</p>
+                <span className={`role-badge ${profile.role}`}>
+                  {profile.role === 'instructor' ? 'Instructor' : ' Student'}
+                </span>
               </div>
+    
             </>
           )}
         </div>

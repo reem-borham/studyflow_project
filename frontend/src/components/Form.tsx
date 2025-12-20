@@ -10,11 +10,12 @@ const Form = () => {
     last_name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'student'
   });
   const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -42,7 +43,7 @@ const Form = () => {
           last_name: formData.last_name,
           email: formData.email,
           password: formData.password,
-          role: 'student' // Default role
+          role: formData.role
         }),
       });
 
@@ -108,6 +109,21 @@ const Form = () => {
             <span>Lastname</span>
           </label>
         </div>
+
+        <label>
+          <select
+            className="input"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            style={{ color: '#fff', appearance: 'none' }}
+          >
+            <option value="student" style={{ color: '#000' }}>Student</option>
+            <option value="instructor" style={{ color: '#000' }}>Instructor</option>
+          </select>
+          <span>I am a...</span>
+        </label>
+
         <label>
           <input
             className="input"
@@ -164,9 +180,12 @@ const StyledWrapper = styled.div`
     padding: 20px;
     border-radius: 20px;
     position: relative;
-    background-color: #1a1a1a;
+    background: rgba(48, 52, 76, 0.4);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #fff;
-    border: 1px solid #333;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
 
   .title {
@@ -177,7 +196,10 @@ const StyledWrapper = styled.div`
     display: flex;
     align-items: center;
     padding-left: 30px;
-    color: #00bfff;
+    color: #fff;
+    background: linear-gradient(135deg, #fff 0%, #a5b1c2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .title::before {
@@ -199,7 +221,7 @@ const StyledWrapper = styled.div`
     width: 16px;
     border-radius: 50%;
     left: 0px;
-    background-color: #00bfff;
+    background: linear-gradient(135deg, #6c5ce7, #ff00cc);
   }
 
   .message, 
@@ -213,11 +235,11 @@ const StyledWrapper = styled.div`
   }
 
   .signin a:hover {
-    text-decoration: underline royalblue;
+    text-decoration: underline #a29bfe;
   }
 
   .signin a {
-    color: #00bfff;
+    color: #6c5ce7;
   }
 
   .flex {
@@ -236,7 +258,8 @@ const StyledWrapper = styled.div`
     width: 100%;
     padding: 20px 05px 05px 10px;
     outline: 0;
-    border: 1px solid rgba(105, 105, 105, 0.397);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(20, 20, 30, 0.6);
     border-radius: 10px;
   }
 
@@ -257,7 +280,7 @@ const StyledWrapper = styled.div`
 
   .form label .input:focus + span,
   .form label .input:valid + span {
-    color: #00bfff;
+    color: #a29bfe;
     top: 0px;
     font-size: 0.7em;
     font-weight: 600;
@@ -275,11 +298,14 @@ const StyledWrapper = styled.div`
     color: #fff;
     font-size: 16px;
     transform: .3s ease;
-    background-color: #00bfff;
+    background: linear-gradient(135deg, #6c5ce7, #a55eea);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+    font-weight: 600;
   }
 
   .submit:hover {
-    background-color: #00bfff96;
+    background: linear-gradient(135deg, #a55eea, #6c5ce7);
+    transform: translateY(-2px);
   }
 
   @keyframes pulse {
