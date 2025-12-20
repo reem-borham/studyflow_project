@@ -15,9 +15,10 @@ class StudyFlowTests(APITestCase):
         self.instructor = User.objects.create_user(username='instructor', password='password123', email='instructor@test.com')
         
         # URLs
-        self.questions_url = reverse('question_list_create') # /api/questions/
+        self.questions_url = reverse('question_list_create') # /api/posts/
         self.dashboard_url = reverse('user_dashboard')       # /api/dashboard/
         self.answers_url = reverse('answer_list_create')     # /api/answers/
+        self.popular_tags_url = reverse('popular_tags')      # /api/tags/popular/
 
     def authenticate_student(self):
         self.client.force_authenticate(user=self.student)
@@ -88,16 +89,43 @@ class StudyFlowTests(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
+        
         # VERIFY NOTIFICATION (Signal check)
         # Student should have received a notification
-        self.assertEqual(Notification.objects.filter(user=self.student).count(), 1)
-        notif = Notification.objects.get(user=self.student)
+        # Note: Question creation also triggers a notification now, so we filter by type='answer'
+        self.assertEqual(Notification.objects.filter(user=self.student, notification_type='answer').count(), 1)
+        notif = Notification.objects.get(user=self.student, notification_type='answer')
         self.assertEqual(notif.notification_type, 'answer')
         self.assertIn("instructor answered your question", notif.message.lower())
+
+    def test_question_creates_notification(self):
+        self.authenticate_student()
+        data = {"title": "New Q", "body": "Body", "tags": []}
+        self.client.post(self.questions_url, data, format='json')
+        
+        # Verify the 'question posted' notification
+        self.assertEqual(Notification.objects.filter(user=self.student, notification_type='question').count(), 1)
 
     # ==========================================
     # 3. DASHBOARD TESTS
     # ==========================================
+
+    def test_mark_notification_read(self):
+        # Create a notification for the student
+        notif = Notification.objects.create(
+            user=self.student,
+            notification_type='answer',
+            message="Test Msg"
+        )
+        self.authenticate_student()
+        url = reverse('notification_mark_read', args=[notif.id])
+        
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        notif.refresh_from_db()
+        self.assertTrue(notif.is_read)
+
     def test_dashboard_stats(self):
         self.authenticate_student()
         
@@ -117,4 +145,27 @@ class StudyFlowTests(APITestCase):
         stats = response.data['stats']
         
         self.assertEqual(stats['questions_asked'], 2)
+        self.assertEqual(stats['questions_asked'], 2)
         self.assertEqual(stats['questions_answered'], 1)
+        
+        # Verify new fields (lists and profile info)
+        self.assertIn('questions', response.data)
+        self.assertIn('answers', response.data)
+        self.assertEqual(len(response.data['questions']), 2)
+        self.assertEqual(len(response.data['answers']), 1)
+        self.assertIn('profile_picture', response.data) # Can be None, but key must be there
+
+    # ==========================================
+    # 4. TAGS TESTS
+    # ==========================================
+    def test_popular_tags(self):
+        # Create some tags with different usage counts
+        Tag.objects.create(name="python", usage_count=10)
+        Tag.objects.create(name="django", usage_count=5)
+        Tag.objects.create(name="api", usage_count=1)
+        
+        response = self.client.get(self.popular_tags_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should return top tags
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], "python")
