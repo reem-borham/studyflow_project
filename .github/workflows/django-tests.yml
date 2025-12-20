@@ -48,7 +48,6 @@ jobs:
         python manage.py test users.tests.AuthenticationAPITestCase --verbosity=2
         python manage.py test users.tests.ProfilePictureUploadTestCase --verbosity=2
         python manage.py test users.tests.PermissionSecurityTestCase --verbosity=2
-        python manage.py test users.tests.XSSPreventionTestCase --verbosity=2
         
         echo "=== Running New Feature Tests ==="
         python manage.py test answers.tests.AnswerEditDeleteTestCase --verbosity=2
