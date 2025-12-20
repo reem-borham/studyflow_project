@@ -161,6 +161,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
         object_id = self.request.data.get('object_id')
         parent_id = self.request.data.get('parent_comment')
         
+        if not content_type_name or not object_id:
+            raise ValueError('content_type and object_id are required')
+        
         if content_type_name == 'question':
             from questions.models import Question
             content_type = ContentType.objects.get_for_model(Question)
@@ -168,11 +171,14 @@ class CommentListCreateView(generics.ListCreateAPIView):
             from answers.models import Answer
             content_type = ContentType.objects.get_for_model(Answer)
         else:
-            raise ValueError('Invalid content_type')
+            raise ValueError('Invalid content_type. Must be "question" or "answer"')
         
         parent_comment = None
         if parent_id:
-            parent_comment = Comment.objects.get(id=parent_id)
+            try:
+                parent_comment = Comment.objects.get(id=parent_id)
+            except Comment.DoesNotExist:
+                raise ValueError('Parent comment not found')
         
         serializer.save(
             user=self.request.user,

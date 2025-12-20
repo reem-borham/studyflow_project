@@ -27,6 +27,8 @@ class VoteSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     replies_count = serializers.SerializerMethodField()
+    content_type = serializers.IntegerField(write_only=True, required=False)
+    object_id = serializers.IntegerField(write_only=True, required=False)
     
     class Meta:
         model = Comment
