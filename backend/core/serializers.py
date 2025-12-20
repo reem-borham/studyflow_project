@@ -27,13 +27,11 @@ class VoteSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     replies_count = serializers.SerializerMethodField()
-    content_type = serializers.IntegerField(write_only=True, required=False)
-    object_id = serializers.IntegerField(write_only=True, required=False)
     
     class Meta:
         model = Comment
         fields = ['id', 'user', 'username', 'content', 'created_at', 'updated_at', 
-                  'is_edited', 'content_type', 'object_id', 'parent_comment', 'replies_count']
+                  'is_edited', 'parent_comment', 'replies_count']
         read_only_fields = ['user', 'created_at', 'updated_at', 'is_edited', 'username']
     
     def get_replies_count(self, obj):
