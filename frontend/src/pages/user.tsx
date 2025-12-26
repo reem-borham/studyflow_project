@@ -117,6 +117,13 @@ function UserProfile() {
 
       if (response.ok) {
         const data: Profile = await response.json();
+
+        // Redirect instructors to their specialized dashboard
+        if (data.role === 'instructor') {
+          window.location.href = '/instructor';
+          return;
+        }
+
         setProfile(data);
       } else {
         console.error("Failed to fetch dashboard");

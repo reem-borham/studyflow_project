@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import User from "./pages/user";
 import Explore from "./pages/Explore";
 import QuestionDetail from "./pages/QuestionDetail";
+import InstructorDashboard from "./pages/InstructorDashboard";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/login" element={<SigninPage />} />
       <Route path="/home" element={<HomePage />} />
       <Route path="/user" element={<User />} />
+      <Route path="/instructor" element={<InstructorDashboard />} />
       <Route path="/explore" element={<Explore />} />
       <Route path="/question/:id" element={<QuestionDetail />} />
     </Routes>
