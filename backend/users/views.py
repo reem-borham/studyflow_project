@@ -27,6 +27,18 @@ class UserAvatarUploadView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, *args, **kwargs):
+        """Remove user's profile picture"""
+        user = request.user
+        if user.profile_picture:
+            # Delete the file from storage
+            user.profile_picture.delete(save=False)
+            user.profile_picture = None
+            user.save()
+            return Response({"message": "Profile picture removed successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "No profile picture to remove"}, status=status.HTTP_200_OK)
+
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -123,9 +135,12 @@ class UserDashboardView(APIView):
         return Response({
             "username": user.username,
             "profile_picture": user.profile_picture.url if user.profile_picture else None,
-            "email": user.email, # Added email as requested
-            "questions": questions_data, # Added questions list
-            "answers": answers_data,     # Added answers list
+            "email": user.email,
+            "role": user.role,  # CRITICAL: Return user role for frontend role-based rendering
+            "date_joined": user.date_joined.isoformat() if user.date_joined else None,
+            "last_login": user.last_login.isoformat() if user.last_login else None,
+            "questions": questions_data,
+            "answers": answers_data,
             "stats": {
                 "questions_asked": questions_count,
                 "questions_answered": answers_count,

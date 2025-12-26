@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
-import { Container, Paper, TextField, Button, Avatar } from "@mui/material";
+import { Container, Paper, TextField, Button, Avatar, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import ForumIcon from "@mui/icons-material/Forum";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./QuestionDetail.css";
 
 interface Answer {
@@ -26,6 +27,7 @@ interface Question {
 
 export default function QuestionDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [question, setQuestion] = useState<Question | null>(null);
     const [newAnswer, setNewAnswer] = useState("");
     const [loading, setLoading] = useState(true);
@@ -90,6 +92,18 @@ export default function QuestionDetail() {
         <div className="detail-page">
             <Navbar />
             <Container className="detail-container">
+                {/* Back Button */}
+                <div className="back-button-container">
+                    <IconButton
+                        className="back-button"
+                        onClick={() => navigate(-1)}
+                        aria-label="Go back"
+                    >
+                        <ArrowBackIcon />
+                    </IconButton>
+                    <span className="back-text">Back</span>
+                </div>
+
                 <Paper className="question-card glass">
                     <div className="author-info">
                         <Avatar className="avatar-small">{question.user_username[0].toUpperCase()}</Avatar>

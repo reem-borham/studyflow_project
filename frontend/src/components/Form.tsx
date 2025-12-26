@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +14,17 @@ const Form = () => {
     role: 'student'
   });
   const [error, setError] = useState('');
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setError('You are already signed in. Redirecting to home...');
+      setTimeout(() => {
+        navigate('/home');
+      }, 1500);
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -53,8 +64,15 @@ const Form = () => {
         navigate('/login');
       } else {
         const data = await response.json();
-        const errorMessage = Object.values(data).flat().join(' ');
-        setError(errorMessage || 'Registration failed');
+        // Better error handling for duplicate username/email
+        if (data.username) {
+          setError(`Username error: ${data.username.join(' ')}`);
+        } else if (data.email) {
+          setError(`Email error: ${data.email.join(' ')}`);
+        } else {
+          const errorMessage = Object.values(data).flat().join(' ');
+          setError(errorMessage || 'Registration failed');
+        }
       }
     } catch (err) {
       console.error('Registration error:', err);

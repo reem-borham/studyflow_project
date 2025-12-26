@@ -158,28 +158,36 @@ class CommentListCreateView(generics.ListCreateAPIView):
             return Comment.objects.none()
     
     def perform_create(self, serializer):
+        from rest_framework.exceptions import ValidationError
+        
         content_type_name = self.request.data.get('content_type')
         object_id = self.request.data.get('object_id')
         parent_id = self.request.data.get('parent_comment')
         
         if not content_type_name or not object_id:
-            raise ValueError('content_type and object_id are required')
+            raise ValidationError({'detail': 'content_type and object_id are required'})
         
         if content_type_name == 'question':
             from questions.models import Question
             content_type = ContentType.objects.get_for_model(Question)
+            # Verify question exists
+            if not Question.objects.filter(id=object_id).exists():
+                raise ValidationError({'detail': f'Question with id {object_id} not found'})
         elif content_type_name == 'answer':
             from answers.models import Answer
             content_type = ContentType.objects.get_for_model(Answer)
+            # Verify answer exists
+            if not Answer.objects.filter(id=object_id).exists():
+                raise ValidationError({'detail': f'Answer with id {object_id} not found'})
         else:
-            raise ValueError('Invalid content_type. Must be "question" or "answer"')
+            raise ValidationError({'detail': 'Invalid content_type. Must be "question" or "answer"'})
         
         parent_comment = None
         if parent_id:
             try:
                 parent_comment = Comment.objects.get(id=parent_id)
             except Comment.DoesNotExist:
-                raise ValueError('Parent comment not found')
+                raise ValidationError({'detail': 'Parent comment not found'})
         
         serializer.save(
             user=self.request.user,

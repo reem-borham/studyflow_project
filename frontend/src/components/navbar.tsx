@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./Navbar.css";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem('token');
@@ -26,9 +33,27 @@ const Navbar = () => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/dashboard/", {
+        headers: { 'Authorization': `Token ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user profile", error);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+    fetchUserProfile();
+    const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -62,12 +87,57 @@ const Navbar = () => {
     window.location.href = '/login';
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/explore?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (userProfile?.role === 'instructor') {
+      navigate('/instructor');
+    } else {
+      navigate('/user');
+    }
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  // Show back button on user and instructor pages, but not on home, login, register, or explore
+  const showBackButton = ['/user', '/instructor'].includes(location.pathname) ||
+    (!['/home', '/login', '/register', '/', '/explore'].includes(location.pathname) &&
+      !location.pathname.startsWith('/question/'));
+
   return (
     <div className="navbar">
-      <img src="logo2.png" alt="logo" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }} />
+      {showBackButton && (
+        <button className="back-button" onClick={handleBack} title="Go back">
+          <ArrowBackIcon />
+        </button>
+      )}
+      <img
+        src="logo2.png"
+        alt="logo"
+        onClick={() => navigate('/home')}
+        className="navbar-logo"
+      />
       <div className="navbar-right">
         {localStorage.getItem('token') ? (
           <>
+            <form className="SearchContainer" onSubmit={handleSearch}>
+              <SearchIcon />
+              <input
+                placeholder="Search questions..."
+                className="input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
+
             <div className="notification-wrapper">
               <div className="notification-bell" onClick={() => setShowNotifications(!showNotifications)}>
                 <NotificationsIcon style={{ color: '#fff' }} />
@@ -96,40 +166,43 @@ const Navbar = () => {
                 </div>
               )}
             </div>
+
+            {/* User Profile Icon */}
+            <div className="user-profile-icon" onClick={handleProfileClick} title="View profile">
+              {userProfile?.profile_picture ? (
+                <img
+                  src={`http://127.0.0.1:8000${userProfile.profile_picture}`}
+                  alt="Profile"
+                  className="profile-avatar"
+                />
+              ) : (
+                <AccountCircleIcon className="profile-avatar-icon" />
+              )}
+            </div>
+
             <button
               onClick={handleLogout}
               className="logout-btn"
-              style={{
-                marginLeft: '15px',
-                padding: '8px 20px',
-                background: 'linear-gradient(135deg, #e74c3c, #c0392b)',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#fff',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
             >
               Logout
             </button>
           </>
         ) : (
           <>
+            <form className="SearchContainer" onSubmit={handleSearch}>
+              <SearchIcon />
+              <input
+                placeholder="Search..."
+                className="input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
             <a href="/login" className="login-link">Login</a>
             <a href="/Register" className="signin-link">Sign In</a>
           </>
         )}
-        <div className="SearchContainer">
-          <SearchIcon />
-          <input
-            placeholder="Search..."
-            id="input"
-            className="input"
-            name="text"
-            type="text"
-          />
-        </div>
       </div>
     </div>
   );
