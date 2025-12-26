@@ -14,6 +14,7 @@ interface Question {
     views: number;
     vote_count: number;
     comment_count: number;
+    tag_names?: string[];
 }
 
 // Dummy data for questions
@@ -75,19 +76,50 @@ export default function Explore() {
     const [posts, setPosts] = useState<Question[]>(dummyQuestions);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isTagSearch, setIsTagSearch] = useState(false);
 
     useEffect(() => {
         // Get search query from URL
         const params = new URLSearchParams(location.search);
-        const search = params.get('search') || params.get('tag') || '';
-        setSearchQuery(search);
+        const tagSearch = params.get('tag') || '';
+        const textSearch = params.get('search') || '';
+
+        setSearchQuery(tagSearch || textSearch);
+        setIsTagSearch(!!tagSearch);
+
+        // Build API URL with tag filter if specified
+        let apiUrl = "http://127.0.0.1:8000/api/posts/";
+        if (tagSearch) {
+            // Try to filter by tag on the backend
+            apiUrl += `?tag=${encodeURIComponent(tagSearch)}`;
+        }
 
         // Try to fetch real data
-        fetch("http://127.0.0.1:8000/api/posts/")
+        setLoading(true);
+        fetch(apiUrl)
             .then((res) => res.json())
             .then((data) => {
-                if (data && data.length > 0) {
-                    setPosts(data);
+                const postsArray = data.results || data;
+                if (postsArray && postsArray.length > 0) {
+                    setPosts(postsArray);
+                } else if (tagSearch) {
+                    // If tag filter returns nothing, try fetching all and filter client-side
+                    fetch("http://127.0.0.1:8000/api/posts/")
+                        .then(res => res.json())
+                        .then(allData => {
+                            const allPosts = allData.results || allData;
+                            if (allPosts && allPosts.length > 0) {
+                                const filtered = allPosts.filter((post: any) =>
+                                    post.tag_names?.some((tag: string) =>
+                                        tag.toLowerCase().includes(tagSearch.toLowerCase())
+                                    )
+                                );
+                                setPosts(filtered.length > 0 ? filtered : allPosts);
+                            }
+                            setLoading(false);
+                        })
+                        .catch(() => setLoading(false));
+                    return; // Don't set loading false yet
                 }
                 setLoading(false);
             })
@@ -97,11 +129,12 @@ export default function Explore() {
             });
     }, [location.search]);
 
-    // Filter posts based on search query
-    const filteredPosts = searchQuery
+    // Filter posts based on search query (client-side filtering for text search)
+    const filteredPosts = searchQuery && !isTagSearch
         ? posts.filter(post =>
             post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.body.toLowerCase().includes(searchQuery.toLowerCase())
+            post.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            post.tag_names?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
         )
         : posts;
 

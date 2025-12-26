@@ -20,10 +20,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* logo  */
-.navbar img {
-  height: 80px;
-  margin-left: 20px;
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .navbar-right {
@@ -227,12 +228,14 @@
   font-size: 20px;
 }
 
-/* Larger Logo */
+/* Logo */
 .navbar-logo {
-  height: 100px !important;
-  margin-left: 20px;
+  height: 45px !important;
+  width: auto;
+  margin-left: 10px;
   cursor: pointer;
   transition: transform 0.3s ease;
+  object-fit: contain;
 }
 
 .navbar-logo:hover {

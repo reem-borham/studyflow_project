@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Navbar from "../../components/navbar";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import HistoryIcon from "@mui/icons-material/History";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import SchoolIcon from "@mui/icons-material/School";
 import StarIcon from "@mui/icons-material/Star";
@@ -46,15 +44,6 @@ interface Answer {
     is_best_answer?: boolean;
 }
 
-interface Notification {
-    id: number;
-    type: 'answer' | 'reply' | 'system' | 'student';
-    message: string;
-    is_read: boolean;
-    created_at: string;
-    question_id?: number;
-}
-
 interface Profile {
     username: string;
     email: string;
@@ -76,7 +65,7 @@ interface InstructorStats {
     answer_acceptance_rate: number;
 }
 
-type Tab = 'overview' | 'answered' | 'best-answers' | 'students' | 'notifications';
+type Tab = 'overview' | 'answered' | 'best-answers' | 'students';
 
 // Empty initial states - data will be fetched from API
 
@@ -84,8 +73,8 @@ function InstructorDashboard() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unansweredQuestions, setUnansweredQuestions] = useState<Question[]>([]);
+    const [imageError, setImageError] = useState(false);
     const [instructorStats, setInstructorStats] = useState<InstructorStats>({
         total_questions_platform: 0,
         unanswered_questions: 0,
@@ -115,6 +104,7 @@ function InstructorDashboard() {
             });
 
             if (response.ok) {
+                setImageError(false);  // Reset error state for new image
                 fetchProfile();
                 alert("Profile picture uploaded successfully!");
             }
@@ -222,16 +212,6 @@ function InstructorDashboard() {
         }
     };
 
-    const markNotificationRead = (id: number) => {
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, is_read: true } : n
-        ));
-    };
-
-    const markAllNotificationsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, is_read: true })));
-    };
-
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -254,7 +234,6 @@ function InstructorDashboard() {
         return formatDate(dateString);
     };
 
-    const unreadCount = notifications.filter(n => !n.is_read).length;
     const bestAnswers = profile?.answers.filter(a => a.is_best_answer) || [];
 
     useEffect(() => {
@@ -279,15 +258,13 @@ function InstructorDashboard() {
                         <div className="avatar-section">
                             <label className="avatar-wrapper">
                                 <div className="avatar">
-                                    {profile?.profile_picture ? (
+                                    {profile?.profile_picture && !imageError ? (
                                         <>
                                             <img
                                                 src={`http://127.0.0.1:8000${profile.profile_picture}`}
                                                 alt="profile"
-                                                onError={(e) => {
-                                                    // Hide broken image and show placeholder
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
+                                                onError={() => setImageError(true)}
+                                                onLoad={() => setImageError(false)}
                                             />
                                             <button
                                                 className="remove-photo-btn"
@@ -333,10 +310,6 @@ function InstructorDashboard() {
                                     <CalendarTodayIcon fontSize="small" />
                                     Joined {formatDate(profile?.date_joined)}
                                 </span>
-                                <span className="meta-item">
-                                    <AccessTimeIcon fontSize="small" />
-                                    Last active {formatRelativeTime(profile?.last_login)}
-                                </span>
                             </div>
                         </div>
                     </div>
@@ -365,7 +338,7 @@ function InstructorDashboard() {
                     </div>
                     <div className="stat-card warning">
                         <div className="stat-icon">
-                            <NotificationsIcon />
+                            <QuestionAnswerIcon />
                         </div>
                         <div className="stat-content">
                             <h3>{instructorStats.unanswered_questions}</h3>
@@ -439,14 +412,6 @@ function InstructorDashboard() {
                     >
                         <PeopleIcon fontSize="small" />
                         Student Activity
-                    </button>
-                    <button
-                        className={activeTab === 'notifications' ? 'active' : ''}
-                        onClick={() => setActiveTab('notifications')}
-                    >
-                        <NotificationsIcon fontSize="small" />
-                        Notifications
-                        {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
                     </button>
                 </div>
 
@@ -553,34 +518,6 @@ function InstructorDashboard() {
                                             <div className="summary-value">{bestAnswers.length}</div>
                                             <div className="summary-label">Best Answers</div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* Recent Notifications */}
-                                <div className="section-card">
-                                    <h2>
-                                        <NotificationsIcon />
-                                        Recent Notifications
-                                    </h2>
-                                    <div className="notification-list">
-                                        {notifications.slice(0, 4).map((n) => (
-                                            <div
-                                                key={n.id}
-                                                className={`notification-item ${n.is_read ? 'read' : 'unread'}`}
-                                                onClick={() => {
-                                                    markNotificationRead(n.id);
-                                                    if (n.question_id) navigate(`/question/${n.question_id}`);
-                                                }}
-                                            >
-                                                <div className={`notification-icon ${n.type}`}>
-                                                    {n.type === 'student' ? '👨‍🎓' : n.type === 'answer' ? '💬' : '🔔'}
-                                                </div>
-                                                <div className="notification-content">
-                                                    <p>{n.message}</p>
-                                                    <span>{formatRelativeTime(n.created_at)}</span>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -706,47 +643,6 @@ function InstructorDashboard() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Notifications Tab */}
-                    {activeTab === 'notifications' && (
-                        <div className="notifications-section">
-                            <div className="section-header">
-                                <h2>Notifications</h2>
-                                {unreadCount > 0 && (
-                                    <button className="mark-read-btn" onClick={markAllNotificationsRead}>
-                                        Mark all as read
-                                    </button>
-                                )}
-                            </div>
-                            <div className="notifications-list-full">
-                                {notifications.map((n) => (
-                                    <div
-                                        key={n.id}
-                                        className={`notification-card ${n.is_read ? 'read' : 'unread'}`}
-                                        onClick={() => {
-                                            markNotificationRead(n.id);
-                                            if (n.question_id) navigate(`/question/${n.question_id}`);
-                                        }}
-                                    >
-                                        <div className={`notification-type-icon ${n.type}`}>
-                                            {n.type === 'student' ? '👨‍🎓' : n.type === 'answer' ? '💬' : '🔔'}
-                                        </div>
-                                        <div className="notification-details">
-                                            <p className="notification-message">{n.message}</p>
-                                            <span className="notification-time">{formatRelativeTime(n.created_at)}</span>
-                                        </div>
-                                        {!n.is_read && <div className="unread-dot"></div>}
-                                    </div>
-                                ))}
-                                {notifications.length === 0 && (
-                                    <div className="empty-state-large">
-                                        <NotificationsIcon style={{ fontSize: 64, opacity: 0.3 }} />
-                                        <p>No notifications yet</p>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     )}

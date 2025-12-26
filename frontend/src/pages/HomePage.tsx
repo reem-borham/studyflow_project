@@ -1,7 +1,6 @@
 import Navbar from "../components/navbar"
 import { useNavigate } from "react-router-dom"
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer"
-import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt"
 import ExploreIcon from "@mui/icons-material/Explore"
 import { useState, useEffect } from "react"
 import "./HomePage.css"
@@ -24,6 +23,7 @@ const dummyTopics: Tag[] = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [popularTags, setPopularTags] = useState<Tag[]>(dummyTopics);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     // Try to fetch real data, fall back to dummy if fails
@@ -34,27 +34,39 @@ export default function HomePage() {
           setPopularTags(data);
         }
       })
-      .catch(err => {
+      .catch(() => {
         console.log("Using dummy data for popular topics");
         // Keep dummy data
       });
+
+    // Fetch user role if logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://127.0.0.1:8000/api/dashboard/', {
+        headers: { 'Authorization': `Token ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.role) {
+            setUserRole(data.role);
+          }
+        })
+        .catch(() => {
+          // Ignore errors
+        });
+    }
   }, []);
 
-  const handleNavigateToUser = () => {
+  const handlePrimaryAction = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
-    } else {
-      navigate('/user');
-    }
-  };
-
-  const handleShareAnswers = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    } else {
+    } else if (userRole === 'instructor') {
+      // Instructors go to explore to answer questions
       navigate('/explore');
+    } else {
+      // Students go to their profile to ask questions
+      navigate('/user');
     }
   };
 
@@ -71,13 +83,9 @@ export default function HomePage() {
         <img className="hero-image" src="pic.jpg" alt="students-pic" />
       </section>
       <section className="features">
-        <div className="feature" onClick={handleNavigateToUser}>
+        <div className="feature" onClick={handlePrimaryAction}>
           <QuestionAnswerIcon className="feature-icon" />
-          <p>Ask Questions</p>
-        </div>
-        <div className="feature" onClick={handleShareAnswers}>
-          <PsychologyAltIcon className="feature-icon" />
-          <p>Share Answers</p>
+          <p>{userRole === 'instructor' ? 'Answer Questions' : 'Ask Questions'}</p>
         </div>
         <div className="feature" onClick={() => navigate('/explore')}>
           <ExploreIcon className="feature-icon" />
@@ -86,7 +94,7 @@ export default function HomePage() {
       </section>
 
       <section className="info-section">
-        <h2>How It Works</h2>
+        <h2>Topics</h2>
 
         <div className="topics-box">
           <h3>Popular Topics</h3>

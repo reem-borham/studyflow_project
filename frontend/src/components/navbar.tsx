@@ -14,6 +14,7 @@ const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileImageError, setProfileImageError] = useState(false);
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem('token');
@@ -44,6 +45,7 @@ const Navbar = () => {
       if (response.ok) {
         const data = await response.json();
         setUserProfile(data);
+        setProfileImageError(false);  // Reset error on new profile fetch
       }
     } catch (error) {
       console.error("Failed to fetch user profile", error);
@@ -55,7 +57,7 @@ const Navbar = () => {
     fetchUserProfile();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [location.pathname]);  // Refetch when navigating to catch profile updates
 
   const markAsRead = async (id: number) => {
     const token = localStorage.getItem('token');
@@ -113,17 +115,19 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
-      {showBackButton && (
-        <button className="back-button" onClick={handleBack} title="Go back">
-          <ArrowBackIcon />
-        </button>
-      )}
-      <img
-        src="logo2.png"
-        alt="logo"
-        onClick={() => navigate('/home')}
-        className="navbar-logo"
-      />
+      <div className="navbar-left">
+        {showBackButton && (
+          <button className="back-button" onClick={handleBack} title="Go back">
+            <ArrowBackIcon />
+          </button>
+        )}
+        <img
+          src="/studyflow_logo.png"
+          alt="StudyFlow"
+          onClick={() => navigate('/home')}
+          className="navbar-logo"
+        />
+      </div>
       <div className="navbar-right">
         {localStorage.getItem('token') ? (
           <>
@@ -169,11 +173,13 @@ const Navbar = () => {
 
             {/* User Profile Icon */}
             <div className="user-profile-icon" onClick={handleProfileClick} title="View profile">
-              {userProfile?.profile_picture ? (
+              {userProfile?.profile_picture && !profileImageError ? (
                 <img
                   src={`http://127.0.0.1:8000${userProfile.profile_picture}`}
                   alt="Profile"
                   className="profile-avatar"
+                  onError={() => setProfileImageError(true)}
+                  onLoad={() => setProfileImageError(false)}
                 />
               ) : (
                 <AccountCircleIcon className="profile-avatar-icon" />

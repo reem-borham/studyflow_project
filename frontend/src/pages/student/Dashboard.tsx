@@ -4,10 +4,8 @@ import "./Dashboard.css";
 import Card from "../../components/posts";
 import Navbar from "../../components/navbar";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import HistoryIcon from "@mui/icons-material/History";
 import PersonIcon from "@mui/icons-material/Person";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
@@ -64,20 +62,13 @@ interface Profile {
   notifications?: Notification[];
 }
 
-type Tab = 'dashboard' | 'questions' | 'answers' | 'notifications' | 'activity';
-
-// Dummy notifications for demo
-const dummyNotifications: Notification[] = [
-  { id: 1, type: 'answer', message: 'Your question "Python list comprehension" received an answer', is_read: false, created_at: new Date().toISOString(), question_id: 1 },
-  { id: 2, type: 'reply', message: 'New reply on "React hooks explained"', is_read: false, created_at: new Date(Date.now() - 3600000).toISOString(), question_id: 2 },
-  { id: 3, type: 'system', message: 'Welcome to StudyFlow! Complete your profile.', is_read: true, created_at: new Date(Date.now() - 86400000).toISOString() },
-];
+type Tab = 'dashboard' | 'questions' | 'answers' | 'activity';
 
 function StudentDashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [notifications, setNotifications] = useState<Notification[]>(dummyNotifications);
+  const [imageError, setImageError] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,6 +96,7 @@ function StudentDashboard() {
       });
 
       if (response.ok) {
+        setImageError(false);  // Reset error state for new image
         fetchProfile();
         alert("Profile picture uploaded successfully!");
       } else {
@@ -200,16 +192,6 @@ function StudentDashboard() {
     }
   };
 
-  const markNotificationRead = (id: number) => {
-    setNotifications(notifications.map(n =>
-      n.id === id ? { ...n, is_read: true } : n
-    ));
-  };
-
-  const markAllNotificationsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
-  };
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -232,9 +214,6 @@ function StudentDashboard() {
     return formatDate(dateString);
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-  const pendingQuestions = profile?.questions.filter(q => q.comment_count === 0) || [];
-
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -256,15 +235,13 @@ function StudentDashboard() {
             <div className="avatar-section">
               <label className="avatar-wrapper">
                 <div className="avatar">
-                  {profile?.profile_picture ? (
+                  {profile?.profile_picture && !imageError ? (
                     <>
                       <img
                         src={`http://127.0.0.1:8000${profile.profile_picture}`}
                         alt="profile"
-                        onError={(e) => {
-                          // Hide broken image and show placeholder
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        onError={() => setImageError(true)}
+                        onLoad={() => setImageError(false)}
                       />
                       <button
                         className="remove-photo-btn"
@@ -310,10 +287,6 @@ function StudentDashboard() {
                   <CalendarTodayIcon fontSize="small" />
                   Joined {formatDate(profile?.date_joined)}
                 </span>
-                <span className="meta-item">
-                  <AccessTimeIcon fontSize="small" />
-                  Last active {formatRelativeTime(profile?.last_login)}
-                </span>
               </div>
             </div>
           </div>
@@ -349,24 +322,6 @@ function StudentDashboard() {
               <p>Answers Given</p>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon reputation">
-              <span className="reputation-icon">⭐</span>
-            </div>
-            <div className="stat-content">
-              <h3>{profile?.stats.reputation_score || 0}</h3>
-              <p>Reputation Score</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon pending">
-              <span className="pending-icon">⏳</span>
-            </div>
-            <div className="stat-content">
-              <h3>{pendingQuestions.length}</h3>
-              <p>Pending Questions</p>
-            </div>
-          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -391,14 +346,6 @@ function StudentDashboard() {
           >
             <QuestionAnswerIcon fontSize="small" />
             My Answers
-          </button>
-          <button
-            className={activeTab === 'notifications' ? 'active' : ''}
-            onClick={() => setActiveTab('notifications')}
-          >
-            <NotificationsIcon fontSize="small" />
-            Notifications
-            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
           </button>
         </div>
 
@@ -436,53 +383,6 @@ function StudentDashboard() {
                     {(!profile?.questions.length && !profile?.answers.length) && (
                       <p className="empty-state">No recent activity</p>
                     )}
-                  </div>
-                </div>
-
-                {/* Pending Questions */}
-                <div className="section-card">
-                  <h2>
-                    <span>⏳</span>
-                    Pending Questions
-                  </h2>
-                  <div className="pending-list">
-                    {pendingQuestions.slice(0, 5).map((q) => (
-                      <div key={q.id} className="pending-item" onClick={() => navigate(`/question/${q.id}`)}>
-                        <span className="pending-title">{q.title}</span>
-                        <span className="pending-time">{formatRelativeTime(q.created_at)}</span>
-                      </div>
-                    ))}
-                    {pendingQuestions.length === 0 && (
-                      <p className="empty-state">All questions have been answered! 🎉</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Recent Notifications */}
-                <div className="section-card">
-                  <h2>
-                    <NotificationsIcon />
-                    Recent Notifications
-                  </h2>
-                  <div className="notification-list">
-                    {notifications.slice(0, 3).map((n) => (
-                      <div
-                        key={n.id}
-                        className={`notification-item ${n.is_read ? 'read' : 'unread'}`}
-                        onClick={() => {
-                          markNotificationRead(n.id);
-                          if (n.question_id) navigate(`/question/${n.question_id}`);
-                        }}
-                      >
-                        <div className={`notification-icon ${n.type}`}>
-                          {n.type === 'answer' ? '💬' : n.type === 'reply' ? '↩️' : '🔔'}
-                        </div>
-                        <div className="notification-content">
-                          <p>{n.message}</p>
-                          <span>{formatRelativeTime(n.created_at)}</span>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
@@ -546,47 +446,6 @@ function StudentDashboard() {
                     <QuestionAnswerIcon style={{ fontSize: 64, opacity: 0.3 }} />
                     <p>No answers given yet</p>
                     <button onClick={() => navigate('/explore')}>Browse questions to answer</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Notifications Tab */}
-          {activeTab === 'notifications' && (
-            <div className="notifications-section">
-              <div className="section-header">
-                <h2>Notifications</h2>
-                {unreadCount > 0 && (
-                  <button className="mark-read-btn" onClick={markAllNotificationsRead}>
-                    Mark all as read
-                  </button>
-                )}
-              </div>
-              <div className="notifications-list-full">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`notification-card ${n.is_read ? 'read' : 'unread'}`}
-                    onClick={() => {
-                      markNotificationRead(n.id);
-                      if (n.question_id) navigate(`/question/${n.question_id}`);
-                    }}
-                  >
-                    <div className={`notification-type-icon ${n.type}`}>
-                      {n.type === 'answer' ? '💬' : n.type === 'reply' ? '↩️' : '🔔'}
-                    </div>
-                    <div className="notification-details">
-                      <p className="notification-message">{n.message}</p>
-                      <span className="notification-time">{formatRelativeTime(n.created_at)}</span>
-                    </div>
-                    {!n.is_read && <div className="unread-dot"></div>}
-                  </div>
-                ))}
-                {notifications.length === 0 && (
-                  <div className="empty-state-large">
-                    <NotificationsIcon style={{ fontSize: 64, opacity: 0.3 }} />
-                    <p>No notifications yet</p>
                   </div>
                 )}
               </div>
