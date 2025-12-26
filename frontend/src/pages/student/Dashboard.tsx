@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Card from "../../components/posts";
@@ -69,6 +69,7 @@ function StudentDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [imageError, setImageError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -233,7 +234,7 @@ function StudentDashboard() {
         <div className="profile-header">
           <div className="header-left">
             <div className="avatar-section">
-              <label className="avatar-wrapper">
+              <div className="avatar-wrapper" onClick={() => fileInputRef.current?.click()}>
                 <div className="avatar">
                   {profile?.profile_picture && !imageError ? (
                     <>
@@ -253,6 +254,7 @@ function StudentDashboard() {
                           }
                         }}
                         title="Remove photo"
+                        type="button"
                       >
                         ✕
                       </button>
@@ -264,15 +266,16 @@ function StudentDashboard() {
                   )}
                 </div>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  hidden
+                  style={{ display: 'none' }}
                 />
                 <div className="edit-overlay">
                   {profile?.profile_picture ? 'Change' : 'Upload'}
                 </div>
-              </label>
+              </div>
             </div>
 
             <div className="user-info">

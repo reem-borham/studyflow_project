@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Navbar from "../../components/navbar";
@@ -75,6 +75,7 @@ function InstructorDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [unansweredQuestions, setUnansweredQuestions] = useState<Question[]>([]);
     const [imageError, setImageError] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [instructorStats, setInstructorStats] = useState<InstructorStats>({
         total_questions_platform: 0,
         unanswered_questions: 0,
@@ -256,7 +257,7 @@ function InstructorDashboard() {
                 <div className="instructor-header">
                     <div className="header-left">
                         <div className="avatar-section">
-                            <label className="avatar-wrapper">
+                            <div className="avatar-wrapper" onClick={() => fileInputRef.current?.click()}>
                                 <div className="avatar">
                                     {profile?.profile_picture && !imageError ? (
                                         <>
@@ -276,6 +277,7 @@ function InstructorDashboard() {
                                                     }
                                                 }}
                                                 title="Remove photo"
+                                                type="button"
                                             >
                                                 ✕
                                             </button>
@@ -287,15 +289,16 @@ function InstructorDashboard() {
                                     )}
                                 </div>
                                 <input
+                                    ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    hidden
+                                    style={{ display: 'none' }}
                                 />
                                 <div className="edit-overlay">
                                     {profile?.profile_picture ? 'Change' : 'Upload'}
                                 </div>
-                            </label>
+                            </div>
                         </div>
 
                         <div className="user-info">
