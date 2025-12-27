@@ -8,6 +8,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { apiUrl, getServerUrl } from "../../config";
 
 interface Stats {
   questions_asked: number;
@@ -90,7 +91,7 @@ function StudentDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("http://127.0.0.1:8000/api/upload-profile-image/", {
+      const response = await fetch(apiUrl("api/upload-profile-image/"), {
         method: "POST",
         headers: { 'Authorization': `Token ${token}` },
         body: formData,
@@ -112,7 +113,7 @@ function StudentDashboard() {
   const handleRemovePhoto = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("http://127.0.0.1:8000/api/upload-profile-image/", {
+      const response = await fetch(apiUrl("api/upload-profile-image/"), {
         method: "DELETE",
         headers: { 'Authorization': `Token ${token}` }
       });
@@ -134,7 +135,7 @@ function StudentDashboard() {
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:8000/api/dashboard/", {
+      const response = await fetch(apiUrl("api/dashboard/"), {
         headers: { 'Authorization': `Token ${token}` }
       });
 
@@ -163,7 +164,7 @@ function StudentDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("http://127.0.0.1:8000/api/posts/", {
+      const response = await fetch(apiUrl("api/posts/"), {
         method: "POST",
         headers: {
           'Authorization': `Token ${token}`,
@@ -239,7 +240,7 @@ function StudentDashboard() {
                   {profile?.profile_picture && !imageError ? (
                     <>
                       <img
-                        src={`http://127.0.0.1:8000${profile.profile_picture}`}
+                        src={`${getServerUrl()}${profile.profile_picture}`}
                         alt="profile"
                         onError={() => setImageError(true)}
                         onLoad={() => setImageError(false)}

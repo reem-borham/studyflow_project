@@ -6,6 +6,7 @@ import SendIcon from "@mui/icons-material/Send";
 import ForumIcon from "@mui/icons-material/Forum";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./QuestionDetail.css";
+import { apiUrl, getServerUrl } from "../config";
 
 interface Answer {
     id: number;
@@ -39,7 +40,7 @@ export default function QuestionDetail() {
 
     const fetchQuestion = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/posts/${id}/`);
+            const response = await fetch(`${getServerUrl()}/api/posts/${id}/`);
             if (response.ok) {
                 const data = await response.json();
                 setQuestion(data);
@@ -62,7 +63,7 @@ export default function QuestionDetail() {
 
         setSubmitting(true);
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/answers/", {
+            const response = await fetch(apiUrl("api/answers/"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

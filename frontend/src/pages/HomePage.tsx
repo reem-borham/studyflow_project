@@ -4,6 +4,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer"
 import ExploreIcon from "@mui/icons-material/Explore"
 import { useState, useEffect } from "react"
 import "./HomePage.css"
+import { apiUrl } from "../config";
 
 interface Tag {
   id: number;
@@ -27,7 +28,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Try to fetch real data, fall back to dummy if fails
-    fetch('http://127.0.0.1:8000/api/tags/popular/')
+    fetch(apiUrl("api/tags/popular/"))
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {
@@ -42,7 +43,7 @@ export default function HomePage() {
     // Fetch user role if logged in
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('http://127.0.0.1:8000/api/dashboard/', {
+      fetch(apiUrl("api/dashboard/"), {
         headers: { 'Authorization': `Token ${token}` }
       })
         .then(res => res.json())

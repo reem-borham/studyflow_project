@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { apiUrl } from "../config";
 
 interface CardProps {
   id?: number;
@@ -55,7 +56,7 @@ const Card = ({ id, title, content, username, stats }: CardProps) => {
       }
 
       // Backend expects POST to /api/comments/ with content_type and object_id
-      const response = await fetch('http://127.0.0.1:8000/api/comments/', {
+      const response = await fetch(apiUrl("api/comments/"), {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,
