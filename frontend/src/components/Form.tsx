@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 const Form = () => {
   const navigate = useNavigate();
@@ -43,34 +44,24 @@ const Form = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/register/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role
-        }),
-      });
+      const data = await authAPI.register(
+        formData.username,
+        formData.email,
+        formData.password,
+        formData.role as 'student' | 'instructor'
+      );
 
-      if (response.ok) {
-        // Registration successful
+      if (data.token || data.user) {
         alert('Registration successful! Please login.');
         navigate('/login');
       } else {
-        const data = await response.json();
-        // Better error handling for duplicate username/email
+        // Handle error responses
         if (data.username) {
           setError(`Username error: ${data.username.join(' ')}`);
         } else if (data.email) {
           setError(`Email error: ${data.email.join(' ')}`);
         } else {
-          const errorMessage = Object.values(data).flat().join(' ');
+          const errorMessage = typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Registration failed';
           setError(errorMessage || 'Registration failed');
         }
       }

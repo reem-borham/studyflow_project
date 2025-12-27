@@ -1,5 +1,6 @@
 // API Base Configuration
-const API_BASE_URL = 'http://localhost:8000/api';
+// Use environment variable in production, fallback to localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {

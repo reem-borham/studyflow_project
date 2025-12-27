@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 const Form = () => {
   const navigate = useNavigate();
@@ -35,23 +36,13 @@ const Form = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const data = await authAPI.login(formData.username, formData.password);
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // Save token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
         console.log('Login successful', data);
-        // Redirect to home page first
         navigate('/home');
       } else {
-        const data = await response.json();
-        // data might be { non_field_errors: [...] } or other structure
         const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Login failed';
         setError(errorMessage);
       }
