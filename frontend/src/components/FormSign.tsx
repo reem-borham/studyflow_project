@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const Form = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const Form = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
+      const response = await fetch(getApiUrl('/login/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
