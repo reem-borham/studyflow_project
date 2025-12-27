@@ -4,6 +4,9 @@ import { API_BASE_URL } from './services/api';
 // Get base server URL (for things like profile pictures)
 export const SERVER_URL = API_BASE_URL.replace('/api', '');
 
+// Get base server URL function (for template literals)
+export const getServerUrl = () => SERVER_URL;
+
 // Get full API URL
 export const API_URL = API_BASE_URL;
 
@@ -14,4 +17,4 @@ export const apiUrl = (path: string) => {
     return `${SERVER_URL}/${cleanPath}`;
 };
 
-export default { SERVER_URL, API_URL, apiUrl };
+export default { SERVER_URL, API_URL, apiUrl, getServerUrl };
