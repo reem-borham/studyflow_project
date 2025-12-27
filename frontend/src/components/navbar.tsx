@@ -4,6 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { API_BASE_URL, getServerUrl } from "../services/api";
 import "./navbar.css";
 
 const Navbar = () => {
@@ -21,7 +22,7 @@ const Navbar = () => {
     if (!token) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/notifications/", {
+      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/notifications/`, {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (response.ok) {
@@ -39,7 +40,7 @@ const Navbar = () => {
     if (!token) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dashboard/", {
+      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/dashboard/`, {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (response.ok) {
@@ -62,7 +63,7 @@ const Navbar = () => {
   const markAsRead = async (id: number) => {
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://127.0.0.1:8000/api/notifications/${id}/mark-read/`, {
+      await fetch(`${API_BASE_URL.replace('/api', '')}/api/notifications/${id}/mark-read/`, {
         method: 'POST',
         headers: { 'Authorization': `Token ${token}` }
       });
@@ -76,7 +77,7 @@ const Navbar = () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        await fetch('http://127.0.0.1:8000/api/logout/', {
+        await fetch(`${API_BASE_URL.replace('/api', '')}/api/logout/`, {
           method: 'POST',
           headers: { 'Authorization': `Token ${token}` }
         });
@@ -175,7 +176,7 @@ const Navbar = () => {
             <div className="user-profile-icon" onClick={handleProfileClick} title="View profile">
               {userProfile?.profile_picture && !profileImageError ? (
                 <img
-                  src={`http://127.0.0.1:8000${userProfile.profile_picture}`}
+                  src={`${getServerUrl()}${userProfile.profile_picture}`}
                   alt="Profile"
                   className="profile-avatar"
                   onError={() => setProfileImageError(true)}
