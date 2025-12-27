@@ -11,7 +11,7 @@ services:
     name: studyflow-backend
     env: python
     region: frankfurt
-    plan: free
+    plan: starter
     buildCommand: "./build.sh"
     startCommand: "gunicorn studyflow.wsgi:application"
     envVars:
@@ -31,7 +31,7 @@ services:
   - type: web
     name: studyflow-frontend
     env: static
-    plan: free
+    plan: starter
     buildCommand: "cd frontend && npm install && npm run build"
     staticPublishPath: ./frontend/dist
     envVars:
