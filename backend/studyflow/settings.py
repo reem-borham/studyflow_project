@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hr97pql9^1i8%z6mqa=q5y_-g=j(9&s$y-(io*3w$+m-rc879d'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-hr97pql9^1i8%z6mqa=q5y_-g=j(9&s$y-(io*3w$+m-rc879d')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1', '.onrender.com']
 
 
 
@@ -55,6 +56,7 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this for static files on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,22 +89,36 @@ WSGI_APPLICATION = 'studyflow.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database configuration
+# Use DATABASE_URL from Render, or fall back to local SQLite or PostgreSQL
+if os.environ.get('DATABASE_URL'):
+    # Production: Use Render's PostgreSQL database
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
-
-# HACK: Force PostgreSQL only on Sarah's machine to allow teammates to use SQLite
-if os.environ.get('COMPUTERNAME') == 'SARAHSHINNAWY':
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'studyflow_db',      # Database you just created
-        'USER': 'postgres',          # PostgreSQL username
-        'PASSWORD': 'Mymomh@d2cats', # PostgreSQL password (NOT pgAdmin password)
-        'HOST': 'localhost',
-        'PORT': '5432',
+elif os.environ.get('COMPUTERNAME') == 'SARAHSHINNAWY':
+    # Sarah's local PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'studyflow_db',
+            'USER': 'postgres',
+            'PASSWORD': 'Mymomh@d2cats',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+else:
+    # Other developers: SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
 
@@ -141,7 +157,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (Uploads)
 MEDIA_URL = '/media/'
