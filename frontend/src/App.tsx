@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import SigninPage from "./pages/login";
 import "./App.css";
 import HomePage from "./pages/HomePage";
@@ -14,6 +14,9 @@ function App() {
   return (
 
     <Routes>
+      {/* Default route - redirect to home */}
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      
       <Route path="/Register" element={<Register />} />
       <Route path="/login" element={<SigninPage />} />
       <Route path="/home" element={<HomePage />} />
