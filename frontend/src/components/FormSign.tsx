@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const Form = () => {
   const navigate = useNavigate();
@@ -9,6 +10,17 @@ const Form = () => {
     password: ''
   });
   const [error, setError] = useState('');
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setError('You are already signed in. Redirecting to home...');
+      setTimeout(() => {
+        navigate('/home');
+      }, 1500);
+    }
+  }, [navigate]);
 
   // Explicit handler for username since type might be ambiguous in the generic handler above if we had more fields
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +36,7 @@ const Form = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
+      const response = await fetch(getApiUrl('/login/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +48,8 @@ const Form = () => {
         const data = await response.json();
         localStorage.setItem('token', data.token); // Save token
         console.log('Login successful', data);
-        navigate('/user');
+        // Redirect to home page first
+        navigate('/home');
       } else {
         const data = await response.json();
         // data might be { non_field_errors: [...] } or other structure
@@ -81,6 +94,9 @@ const Form = () => {
           </label>
         </div>
         <button className="submit">Sign in</button>
+        <p className="signup">
+          Don't have an account? <a href="/Register">Sign up</a>
+        </p>
       </form>
     </StyledWrapper>
   );
@@ -144,21 +160,26 @@ const StyledWrapper = styled.div`
   }
 
   .message, 
-  .signin {
+  .signin,
+  .signup {
     font-size: 14.5px;
     color: rgba(255, 255, 255, 0.7);
   }
 
-  .signin {
+  .signin,
+  .signup {
     text-align: center;
   }
 
-  .signin a:hover {
+  .signin a:hover,
+  .signup a:hover {
     text-decoration: underline #a29bfe;
   }
 
-  .signin a {
-    color: #6c5ce7;
+  .signin a,
+  .signup a {
+    color: #a29bfe;
+    font-weight: 600;
   }
 
   .flex {

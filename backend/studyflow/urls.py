@@ -16,12 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
     path('api/posts/', include('questions.urls')),
     path('api/answers/', include('answers.urls')),
-    path('api/notifications/', include('core.urls')),
+    path('api/', include('core.urls')),  # Core features: voting, comments, reports, tags, notifications
 ]
 
+# Serve media files in development AND production
+# Note: For high-traffic production, use cloud storage (S3, Cloudinary)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

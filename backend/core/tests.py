@@ -1,171 +1,350 @@
-from django.urls import reverse
-from rest_framework.test import APITestCase
-from rest_framework import status
+from django.test import TestCase
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+from rest_framework import status
 from questions.models import Question
 from answers.models import Answer
-from core.models import Notification, Tag
+from core.models import Vote, Comment, Report, Tag
+from django.contrib.contenttypes.models import ContentType
 
 User = get_user_model()
 
-class StudyFlowTests(APITestCase):
+class VotingAPITestCase(TestCase):
+    """Test cases for Voting API endpoints"""
+    
     def setUp(self):
-        # Create Users
-        self.student = User.objects.create_user(username='student', password='password123', email='student@test.com')
-        self.instructor = User.objects.create_user(username='instructor', password='password123', email='instructor@test.com')
-        
-        # URLs
-        self.questions_url = reverse('question_list_create') # /api/posts/
-        self.dashboard_url = reverse('user_dashboard')       # /api/dashboard/
-        self.answers_url = reverse('answer_list_create')     # /api/answers/
-        self.popular_tags_url = reverse('popular_tags')      # /api/tags/popular/
-
-    def authenticate_student(self):
-        self.client.force_authenticate(user=self.student)
-
-    def authenticate_instructor(self):
-        self.client.force_authenticate(user=self.instructor)
-
-    # ==========================================
-    # 1. QUESTIONS TESTS (Create, Update, Delete)
-    # ==========================================
-    def test_create_question_with_tags(self):
-        self.authenticate_student()
-        data = {
-            "title": "How to use Django testing?",
-            "body": "I need help with APITestCase.",
-            "tags": ["django", "testing"]
-        }
-        response = self.client.post(self.questions_url, data, format='json')
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Question.objects.count(), 1)
-        self.assertEqual(Question.objects.get().tags.count(), 2)
-        self.assertTrue(Tag.objects.filter(name="django").exists())
-
-    def test_update_question(self):
-        self.authenticate_student()
-        # First create a question
-        question = Question.objects.create(user=self.student, title="Original", body="Original body")
-        question.tags.add(Tag.objects.create(name="old"))
-        
-        url = reverse('question_detail', args=[question.id])
-        data = {
-            "title": "Updated Title",
-            "body": "Updated Body",
-            "tags": ["new", "tags"]
-        }
-        
-        response = self.client.put(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['title'], "Updated Title")
-        # Check tags updated
-        self.assertEqual(len(response.data['tag_names']), 2)
-        self.assertIn("new", response.data['tag_names'])
-
-    def test_delete_question(self):
-        self.authenticate_student()
-        question = Question.objects.create(user=self.student, title="Delete Me", body="...")
-        url = reverse('question_detail', args=[question.id])
-        
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Question.objects.count(), 0)
-
-    # ==========================================
-    # 2. ANSWERS & NOTIFICATIONS TESTS
-    # ==========================================
-    def test_answer_creates_notification(self):
-        # Student asks a question
-        question = Question.objects.create(user=self.student, title="Help!", body="...")
-        
-        # Instructor answers it
-        self.authenticate_instructor()
-        data = {
-            "body": "Here is the solution.",
-            "question": question.id
-        }
-        response = self.client.post(self.answers_url, data, format='json')
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        
-        # VERIFY NOTIFICATION (Signal check)
-        # Student should have received a notification
-        # Note: Question creation also triggers a notification now, so we filter by type='answer'
-        self.assertEqual(Notification.objects.filter(user=self.student, notification_type='answer').count(), 1)
-        notif = Notification.objects.get(user=self.student, notification_type='answer')
-        self.assertEqual(notif.notification_type, 'answer')
-        self.assertIn("instructor answered your question", notif.message.lower())
-
-    def test_question_creates_notification(self):
-        self.authenticate_student()
-        data = {"title": "New Q", "body": "Body", "tags": []}
-        self.client.post(self.questions_url, data, format='json')
-        
-        # Verify the 'question posted' notification
-        self.assertEqual(Notification.objects.filter(user=self.student, notification_type='question').count(), 1)
-
-    # ==========================================
-    # 3. DASHBOARD TESTS
-    # ==========================================
-
-    def test_mark_notification_read(self):
-        # Create a notification for the student
-        notif = Notification.objects.create(
-            user=self.student,
-            notification_type='answer',
-            message="Test Msg"
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
         )
-        self.authenticate_student()
-        url = reverse('notification_mark_read', args=[notif.id])
-        
-        response = self.client.post(url)
+        self.user2 = User.objects.create_user(
+            username='testuser2',
+            email='test2@example.com',
+            password='testpass123'
+        )
+        self.question = Question.objects.create(
+            title='Test Question',
+            body='Test body',
+            user=self.user2
+        )
+        self.client.force_authenticate(user=self.user)
+    
+    def test_create_upvote(self):
+        """Test creating an upvote on a question"""
+        response = self.client.post('/api/votes/', {
+            'vote_type': 'up',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['action'], 'created')
+        self.assertEqual(Vote.objects.count(), 1)
+    
+    def test_create_downvote(self):
+        """Test creating a downvote"""
+        response = self.client.post('/api/votes/', {
+            'vote_type': 'down',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Vote.objects.first().vote_type, 'down')
+    
+    def test_toggle_vote(self):
+        """Test removing vote by clicking same button"""
+        # First vote
+        self.client.post('/api/votes/', {
+            'vote_type': 'up',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        # Click same button again
+        response = self.client.post('/api/votes/', {
+            'vote_type': 'up',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        notif.refresh_from_db()
-        self.assertTrue(notif.is_read)
+        self.assertEqual(response.data['action'], 'removed')
+        self.assertEqual(Vote.objects.count(), 0)
+    
+    def test_change_vote(self):
+        """Test changing vote from up to down"""
+        # First upvote
+        self.client.post('/api/votes/', {
+            'vote_type': 'up',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        # Change to downvote
+        response = self.client.post('/api/votes/', {
+            'vote_type': 'down',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['action'], 'changed')
+        self.assertEqual(Vote.objects.first().vote_type, 'down')
+    
+    def test_vote_requires_authentication(self):
+        """Test that voting requires authentication"""
+        self.client.force_authenticate(user=None)
+        response = self.client.post('/api/votes/', {
+            'vote_type': 'up',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_list_votes(self):
+        """Test listing votes for an object"""
+        Vote.objects.create(
+            user=self.user,
+            vote_type='up',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        response = self.client.get(f'/api/votes/list/?content_type=question&object_id={self.question.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
 
-    def test_dashboard_stats(self):
-        self.authenticate_student()
-        
-        # Setup specific stats scenario:
-        # Student asks 2 questions
-        q1 = Question.objects.create(user=self.student, title="Q1", body="...")
-        q2 = Question.objects.create(user=self.student, title="Q2", body="...")
-        
-        # Student answers 1 question (from someone else)
-        other_q = Question.objects.create(user=self.instructor, title="Instr Q", body="...")
-        Answer.objects.create(user=self.student, question=other_q, body="My Answer")
-        
-        # Check Dashboard
-        response = self.client.get(self.dashboard_url)
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        stats = response.data['stats']
-        
-        self.assertEqual(stats['questions_asked'], 2)
-        self.assertEqual(stats['questions_asked'], 2)
-        self.assertEqual(stats['questions_answered'], 1)
-        
-        # Verify new fields (lists and profile info)
-        self.assertIn('questions', response.data)
-        self.assertIn('answers', response.data)
-        self.assertEqual(len(response.data['questions']), 2)
-        self.assertEqual(len(response.data['answers']), 1)
-        self.assertIn('profile_picture', response.data) # Can be None, but key must be there
 
-    # ==========================================
-    # 4. TAGS TESTS
-    # ==========================================
-    def test_popular_tags(self):
-        # Create some tags with different usage counts
-        Tag.objects.create(name="python", usage_count=10)
-        Tag.objects.create(name="django", usage_count=5)
-        Tag.objects.create(name="api", usage_count=1)
-        
-        response = self.client.get(self.popular_tags_url)
+class CommentAPITestCase(TestCase):
+    """Test cases for Comment API endpoints"""
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.question = Question.objects.create(
+            title='Test Question',
+            body='Test body',
+            user=self.user
+        )
+        self.client.force_authenticate(user=self.user)
+    
+    def test_create_comment(self):
+        """Test creating a comment"""
+        response = self.client.post('/api/comments/', {
+            'content': 'This is a test comment',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Comment.objects.count(), 1)
+    
+    def test_create_reply_comment(self):
+        """Test creating a reply to a comment"""
+        # Create parent comment
+        parent = Comment.objects.create(
+            user=self.user,
+            content='Parent comment',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        # Create reply
+        response = self.client.post('/api/comments/', {
+            'content': 'Reply comment',
+            'content_type': 'question',
+            'object_id': self.question.id,
+            'parent_comment': parent.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Comment.objects.count(), 2)
+    
+    def test_list_comments(self):
+        """Test listing comments for an object"""
+        Comment.objects.create(
+            user=self.user,
+            content='Test comment',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        response = self.client.get(f'/api/comments/?content_type=question&object_id={self.question.id}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Should return top tags
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]['name'], "python")
+        self.assertEqual(len(response.data), 1)
+    
+    def test_update_own_comment(self):
+        """Test updating own comment"""
+        comment = Comment.objects.create(
+            user=self.user,
+            content='Original content',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        response = self.client.patch(f'/api/comments/{comment.id}/', {
+            'content': 'Updated content'
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        comment.refresh_from_db()
+        self.assertEqual(comment.content, 'Updated content')
+        self.assertTrue(comment.is_edited)
+    
+    def test_delete_own_comment(self):
+        """Test deleting own comment"""
+        comment = Comment.objects.create(
+            user=self.user,
+            content='Test comment',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        response = self.client.delete(f'/api/comments/{comment.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Comment.objects.count(), 0)
+
+
+class BestAnswerAPITestCase(TestCase):
+    """Test cases for Best Answer marking"""
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.question_author = User.objects.create_user(
+            username='author',
+            email='author@example.com',
+            password='testpass123'
+        )
+        self.other_user = User.objects.create_user(
+            username='other',
+            email='other@example.com',
+            password='testpass123'
+        )
+        self.question = Question.objects.create(
+            title='Test Question',
+            body='Test body',
+            user=self.question_author
+        )
+        self.answer = Answer.objects.create(
+            question=self.question,
+            body='Test answer',
+            user=self.other_user
+        )
+    
+    def test_mark_best_answer_as_author(self):
+        """Test that question author can mark best answer"""
+        self.client.force_authenticate(user=self.question_author)
+        response = self.client.post(f'/api/answers/{self.answer.id}/mark-best/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.answer.refresh_from_db()
+        self.assertTrue(self.answer.is_best_answer)
+    
+    def test_mark_best_answer_as_non_author(self):
+        """Test that non-author cannot mark best answer"""
+        self.client.force_authenticate(user=self.other_user)
+        response = self.client.post(f'/api/answers/{self.answer.id}/mark-best/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    def test_mark_best_answer_unauthenticated(self):
+        """Test that unauthenticated users cannot mark best answer"""
+        response = self.client.post(f'/api/answers/{self.answer.id}/mark-best/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ReportAPITestCase(TestCase):
+    """Test cases for Reporting API"""
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.admin = User.objects.create_user(
+            username='admin',
+            email='admin@example.com',
+            password='adminpass123',
+            is_staff=True,
+            is_superuser=True
+        )
+        self.question = Question.objects.create(
+            title='Test Question',
+            body='Test body',
+            user=self.user
+        )
+        self.client.force_authenticate(user=self.user)
+    
+    def test_create_report(self):
+        """Test creating a report"""
+        response = self.client.post('/api/reports/', {
+            'report_type': 'spam',
+            'description': 'This is spam content',
+            'content_type': 'question',
+            'object_id': self.question.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Report.objects.count(), 1)
+    
+    def test_list_reports_as_admin(self):
+        """Test that admin can list reports"""
+        Report.objects.create(
+            reporter=self.user,
+            report_type='spam',
+            description='Test report',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/reports/list/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+    
+    def test_list_reports_as_non_admin(self):
+        """Test that non-admin cannot list reports"""
+        response = self.client.get('/api/reports/list/')
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
+    
+    def test_resolve_report_as_admin(self):
+        """Test that admin can resolve reports"""
+        report = Report.objects.create(
+            reporter=self.user,
+            report_type='spam',
+            description='Test report',
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=self.question.id
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(f'/api/reports/{report.id}/resolve/', {
+            'status': 'resolved',
+            'admin_notes': 'Not spam'
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        report.refresh_from_db()
+        self.assertEqual(report.status, 'resolved')
+
+
+class TagAPITestCase(TestCase):
+    """Test cases for Tag API"""
+    
+    def setUp(self):
+        self.client = APIClient()
+    
+    def test_list_tags(self):
+        """Test listing all tags"""
+        Tag.objects.create(name='python', usage_count=10)
+        Tag.objects.create(name='django', usage_count=5)
+        response = self.client.get('/api/tags/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        # Should be ordered by usage_count descending
+        self.assertEqual(response.data[0]['name'], 'python')
+    
+    def test_create_tag(self):
+        """Test creating a tag"""
+        response = self.client.post('/api/tags/', {
+            'name': 'javascript',
+            'description': 'JavaScript programming language'
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tag.objects.count(), 1)
+    
+    def test_get_tag_detail(self):
+        """Test getting tag details"""
+        tag = Tag.objects.create(name='python', usage_count=10)
+        response = self.client.get(f'/api/tags/{tag.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'python')

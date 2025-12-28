@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
-import { Container, Paper, TextField, Button, Avatar } from "@mui/material";
+import { Container, Paper, TextField, Button, Avatar, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import ForumIcon from "@mui/icons-material/Forum";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { API_BASE_URL } from "../config/api";
 import "./QuestionDetail.css";
 
 interface Answer {
@@ -26,6 +28,7 @@ interface Question {
 
 export default function QuestionDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [question, setQuestion] = useState<Question | null>(null);
     const [newAnswer, setNewAnswer] = useState("");
     const [loading, setLoading] = useState(true);
@@ -37,7 +40,7 @@ export default function QuestionDetail() {
 
     const fetchQuestion = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/posts/${id}/`);
+            const response = await fetch(`${API_BASE_URL}/posts/${id}/`);
             if (response.ok) {
                 const data = await response.json();
                 setQuestion(data);
@@ -60,7 +63,7 @@ export default function QuestionDetail() {
 
         setSubmitting(true);
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/answers/", {
+            const response = await fetch(`${API_BASE_URL}/answers/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -90,6 +93,18 @@ export default function QuestionDetail() {
         <div className="detail-page">
             <Navbar />
             <Container className="detail-container">
+                {/* Back Button */}
+                <div className="back-button-container">
+                    <IconButton
+                        className="back-button"
+                        onClick={() => navigate(-1)}
+                        aria-label="Go back"
+                    >
+                        <ArrowBackIcon />
+                    </IconButton>
+                    <span className="back-text">Back</span>
+                </div>
+
                 <Paper className="question-card glass">
                     <div className="author-info">
                         <Avatar className="avatar-small">{question.user_username[0].toUpperCase()}</Avatar>

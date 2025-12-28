@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import React from "react";
 import Form from "../components/Form";
-import "./Register.css"; 
+import "./Register.css";
 
 const Register: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const Register: React.FC = () => {
 
       {/* Login content */}
       <div className="form-container">
-        <h1>Register</h1>
+        <h1 className="login-title">Register</h1>
         <Form />
       </div>
     </div>
