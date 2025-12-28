@@ -4,15 +4,40 @@ StudyFlow is a collaborative Q&A web platform designed for academic environments
 
 ---
 
-## 🚀 Features (Version 1.0)
+## 🚀 Features
 
-- **User Management:** Role-based registration for Students and Instructors with token-based authentication.
-- **Q&A System:** Full CRUD operations for questions, including tagging and categorization.
-- **Interactive Answers:** Users can submit answers, with Instructors having the ability to verify "Best Answers".
-- **Personal Dashboards:** Users can track their activity, view statistics (questions asked, answers given), and manage their profiles.
-- **Notification System:** Real-time polling-based alerts for new replies and interactions.
-- **Discovery:** Explore feed with search/filtering and a "Popular Tags" display.
-- **Responsive UI:** A modern interface featuring glassmorphism styling.
+### User Management
+- **Role-based Registration:** Students and Instructors with token-based authentication
+- **Profile Customization:** Upload and manage profile pictures
+- **Personal Dashboard:** Track activity with tabbed interface showing questions asked and answers given
+
+### Q&A System
+- **Full CRUD Operations:** Create, read, update, and delete questions
+- **Tagging & Categorization:** Organize questions with relevant tags
+- **Question Detail View:** Dedicated page with full question content, tags, and all answers
+- **Interactive Answers:** Submit answers directly from question pages
+
+### Engagement Features
+- **Voting System:** Upvote/downvote questions and answers
+- **View Tracking:** Monitor question popularity through view counts
+- **Reputation System:** Track user contributions with reputation scores based on:
+  - Question votes received
+  - Answer votes received
+
+### Notifications
+- **Real-time Polling:** Automatic alerts for new replies and interactions (30-second intervals)
+- **Notification Management:** Mark notifications as read with visual indicators
+- **Unread Counter:** Badge showing unread notification count
+
+### Discovery
+- **Explore Feed:** Browse latest questions from the community
+- **Search Functionality:** Find relevant content quickly
+- **Popular Tags:** View trending topics
+
+### User Interface
+- **Modern Glassmorphism Design:** Sleek, translucent UI elements
+- **Responsive Layout:** Optimized for all screen sizes
+- **Material UI Components:** Professional icons and form elements
 
 ---
 
@@ -20,14 +45,16 @@ StudyFlow is a collaborative Q&A web platform designed for academic environments
 
 ### Frontend
 - **Framework:** React.js with TypeScript
-- **Routing:** React Router
-- **State Management:** React Hooks
+- **Routing:** React Router v6
+- **UI Library:** Material UI (MUI)
+- **State Management:** React Hooks (useState, useEffect)
 - **Styling:** Custom CSS with Glassmorphism effects
 
 ### Backend
 - **Framework:** Django REST Framework (DRF)
 - **Database:** PostgreSQL (Production) / SQLite (Development)
 - **Authentication:** Token-based system
+- **Media Storage:** File-based media handling for profile pictures
 - **ORM:** Django ORM
 
 ---
@@ -36,21 +63,36 @@ StudyFlow is a collaborative Q&A web platform designed for academic environments
 
 The platform follows a three-tier architecture:
 
-1. **Presentation Layer:** React.js SPA.
-2. **Business Logic Layer:** Django REST Framework API.
-3. **Data Layer:** Relational PostgreSQL/SQLite database.
+1. **Presentation Layer:** React.js Single Page Application
+2. **Business Logic Layer:** Django REST Framework API
+3. **Data Layer:** Relational PostgreSQL/SQLite database
 
 ---
 
-## API Overview
+## 📡 API Endpoints
 
-The backend provides several key RESTful endpoints:
+### Authentication
+- `POST /api/register/` - User registration
+- `POST /api/login/` - Token-based authentication
 
-- `POST /api/register/`: User registration.
-- `POST /api/login/`: Token-based authentication.
-- `GET/POST /api/posts/`: List or create questions.
-- `GET /api/tags/popular/`: Retrieve top 5 most used tags.
-- `GET /api/notifications/`: Retrieve user alerts.
+### Questions
+- `GET /api/posts/` - List all questions
+- `POST /api/posts/` - Create a new question
+- `GET /api/posts/{id}/` - Get question details with answers
+
+### Answers
+- `POST /api/answers/` - Submit an answer to a question
+
+### User Profile
+- `GET /api/profile/` - Get user profile with statistics
+- `POST /api/profile/upload-picture/` - Upload profile picture
+
+### Notifications
+- `GET /api/notifications/` - Retrieve user notifications
+- `POST /api/notifications/{id}/mark-read/` - Mark notification as read
+
+### Tags
+- `GET /api/tags/popular/` - Retrieve top 5 most used tags
 
 ---
 
@@ -62,15 +104,19 @@ The backend provides several key RESTful endpoints:
 - PostgreSQL (Optional for local dev)
 
 ### Backend Setup
-1. Clone the repository and navigate to the backend folder.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Run migrations: `python manage.py migrate`.
-4. Start the development server: `python manage.py runserver`.
+```bash
+cd backend
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
 ### Frontend Setup
-1. Navigate to the frontend folder.
-2. Install dependencies: `npm install`.
-3. Start the React app: `npm start`.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
@@ -78,26 +124,30 @@ The backend provides several key RESTful endpoints:
 
 The system includes a comprehensive test suite covering:
 
-- **Questions:** CRUD validation and tagging logic.
-- **Answers & Notifications:** Integration tests for triggered alerts.
-- **Dashboard:** Calculation of user statistics and reputation.
-- **Tags:** Popularity sorting verification.
+- **Questions:** CRUD validation and tagging logic
+- **Answers & Notifications:** Integration tests for triggered alerts
+- **Dashboard:** Calculation of user statistics and reputation
+- **Tags:** Popularity sorting verification
 
-Run backend tests using: `python manage.py test`.
+Run backend tests:
+```bash
+python manage.py test
+```
 
 ---
 
 ## 🔮 Future Enhancements
 
-- AI-driven tag and question suggestions.
-- Gamification with badges and reputation points.
-- WebSocket-based real-time notifications.
-- Mobile applications for iOS and Android.
-- Integration with Learning Management Systems (LMS).
+- AI-driven tag and question suggestions
+- Gamification with badges and achievement system
+- WebSocket-based real-time notifications
+- Mobile applications for iOS and Android
+- Integration with Learning Management Systems (LMS)
+- Advanced search with filters
 
 ---
 
 ## 📄 License & Credits
 
-**Prepared by:** Nourhan ElSheikh, Reem Khaled Ali, Sarah ElShinnawy, and Youssef Alaa-eldin.  
+**Prepared by:** Nourhan ElSheikh, Reem Khaled Ali, Sarah ElShinnawy, and Youssef Alaa-eldin  
 **Date:** December 2025
