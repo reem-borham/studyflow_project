@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL, MEDIA_BASE_URL } from "../config/api";
 import "./navbar.css";
 
 const Navbar = () => {
@@ -176,7 +176,7 @@ const Navbar = () => {
             <div className="user-profile-icon" onClick={handleProfileClick} title="View profile">
               {userProfile?.profile_picture && !profileImageError ? (
                 <img
-                  src={`${API_BASE_URL.replace('/api', '')}${userProfile.profile_picture}`}
+                  src={`${MEDIA_BASE_URL}${userProfile.profile_picture}`}
                   alt="Profile"
                   className="profile-avatar"
                   onError={() => setProfileImageError(true)}

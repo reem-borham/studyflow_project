@@ -8,7 +8,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { API_BASE_URL } from "../../config/api";
+import { API_BASE_URL, MEDIA_BASE_URL } from "../../config/api";
 
 interface Stats {
   questions_asked: number;
@@ -240,7 +240,7 @@ function StudentDashboard() {
                   {profile?.profile_picture && !imageError ? (
                     <>
                       <img
-                        src={`${API_BASE_URL.replace('/api', '')}${profile.profile_picture}`}
+                        src={`${MEDIA_BASE_URL}${profile.profile_picture}`}
                         alt="profile"
                         onError={() => setImageError(true)}
                         onLoad={() => setImageError(false)}

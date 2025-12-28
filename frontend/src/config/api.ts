@@ -13,11 +13,20 @@ const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
+// Base URL for media files (profile pictures, etc.)
+export const MEDIA_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // Export a helper to get full URL
 export const getApiUrl = (endpoint: string): string => {
     // Ensure endpoint starts with /
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${API_BASE_URL}${normalizedEndpoint}`;
+};
+
+// Helper for media URLs (profile pictures)
+export const getMediaUrl = (path: string): string => {
+    if (!path) return '';
+    return `${MEDIA_BASE_URL}${path}`;
 };
 
 export default API_BASE_URL;

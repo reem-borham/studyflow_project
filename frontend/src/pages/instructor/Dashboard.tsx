@@ -10,7 +10,7 @@ import StarIcon from "@mui/icons-material/Star";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import PeopleIcon from "@mui/icons-material/People";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { API_BASE_URL } from "../../config/api";
+import { API_BASE_URL, MEDIA_BASE_URL } from "../../config/api";
 
 interface Stats {
     questions_asked: number;
@@ -263,7 +263,7 @@ function InstructorDashboard() {
                                     {profile?.profile_picture && !imageError ? (
                                         <>
                                             <img
-                                                src={`${API_BASE_URL.replace('/api', '')}${profile.profile_picture}`}
+                                                src={`${MEDIA_BASE_URL}${profile.profile_picture}`}
                                                 alt="profile"
                                                 onError={() => setImageError(true)}
                                                 onLoad={() => setImageError(false)}
