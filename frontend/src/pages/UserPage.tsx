@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentDashboard from './student/Dashboard';
 import InstructorDashboard from './instructor/Dashboard';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * UserPage - Smart router that shows the appropriate dashboard based on user role
@@ -25,7 +26,7 @@ export default function UserPage() {
                     return;
                 }
 
-                const response = await fetch('http://127.0.0.1:8000/api/dashboard/', {
+                const response = await fetch(`${API_BASE_URL}/dashboard/`, {
                     headers: {
                         'Authorization': `Token ${token}`
                     }

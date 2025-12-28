@@ -10,6 +10,7 @@ import StarIcon from "@mui/icons-material/Star";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import PeopleIcon from "@mui/icons-material/People";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { API_BASE_URL } from "../../config/api";
 
 interface Stats {
     questions_asked: number;
@@ -98,7 +99,7 @@ function InstructorDashboard() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch("http://127.0.0.1:8000/api/upload-profile-image/", {
+            const response = await fetch(`${API_BASE_URL}/upload-profile-image/`, {
                 method: "POST",
                 headers: { 'Authorization': `Token ${token}` },
                 body: formData,
@@ -117,7 +118,7 @@ function InstructorDashboard() {
     const handleRemovePhoto = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch("http://127.0.0.1:8000/api/upload-profile-image/", {
+            const response = await fetch(`${API_BASE_URL}/upload-profile-image/`, {
                 method: "DELETE",
                 headers: { 'Authorization': `Token ${token}` }
             });
@@ -139,7 +140,7 @@ function InstructorDashboard() {
                 return;
             }
 
-            const response = await fetch("http://127.0.0.1:8000/api/dashboard/", {
+            const response = await fetch(`${API_BASE_URL}/dashboard/`, {
                 headers: { 'Authorization': `Token ${token}` }
             });
 
@@ -180,7 +181,7 @@ function InstructorDashboard() {
     const fetchUnansweredQuestions = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch("http://127.0.0.1:8000/api/posts/?answered=false&limit=10", {
+            const response = await fetch(`${API_BASE_URL}/posts/?answered=false&limit=10`, {
                 headers: { 'Authorization': `Token ${token}` }
             });
 
@@ -197,7 +198,7 @@ function InstructorDashboard() {
             }
 
             // Also fetch total questions count
-            const totalResponse = await fetch("http://127.0.0.1:8000/api/posts/?limit=1", {
+            const totalResponse = await fetch(`${API_BASE_URL}/posts/?limit=1`, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             if (totalResponse.ok) {
@@ -262,7 +263,7 @@ function InstructorDashboard() {
                                     {profile?.profile_picture && !imageError ? (
                                         <>
                                             <img
-                                                src={`http://127.0.0.1:8000${profile.profile_picture}`}
+                                                src={`${API_BASE_URL.replace('/api', '')}${profile.profile_picture}`}
                                                 alt="profile"
                                                 onError={() => setImageError(true)}
                                                 onLoad={() => setImageError(false)}

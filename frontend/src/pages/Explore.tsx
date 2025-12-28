@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Card from "../components/posts";
 import { Container } from "@mui/material";
+import { API_BASE_URL } from "../config/api";
 import "./Explore.css";
 
 interface Question {
@@ -88,7 +89,7 @@ export default function Explore() {
         setIsTagSearch(!!tagSearch);
 
         // Build API URL with tag filter if specified
-        let apiUrl = "http://127.0.0.1:8000/api/posts/";
+        let apiUrl = `${API_BASE_URL}/posts/`;
         if (tagSearch) {
             // Try to filter by tag on the backend
             apiUrl += `?tag=${encodeURIComponent(tagSearch)}`;
@@ -104,7 +105,7 @@ export default function Explore() {
                     setPosts(postsArray);
                 } else if (tagSearch) {
                     // If tag filter returns nothing, try fetching all and filter client-side
-                    fetch("http://127.0.0.1:8000/api/posts/")
+                    fetch(`${API_BASE_URL}/posts/`)
                         .then(res => res.json())
                         .then(allData => {
                             const allPosts = allData.results || allData;
