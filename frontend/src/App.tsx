@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import SigninPage from "./pages/login";
 import "./App.css";
 import HomePage from "./pages/HomePage";
@@ -14,6 +14,8 @@ function App() {
   return (
 
     <Routes>
+      {/* Redirect root to Register page */}
+      <Route path="/" element={<Navigate to="/Register" replace />} />
       <Route path="/Register" element={<Register />} />
       <Route path="/login" element={<SigninPage />} />
       <Route path="/home" element={<HomePage />} />
