@@ -20,10 +20,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* logo  */
-.navbar img {
-  height: 80px;
-  margin-left: 20px;
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .navbar-right {
@@ -200,4 +201,90 @@
 
 .input::placeholder {
   color: #8f94a8;
+}
+
+/* Back Button */
+.back-button {
+  background: rgba(108, 92, 231, 0.2);
+  border: 1px solid rgba(108, 92, 231, 0.4);
+  color: #a29bfe;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-right: 15px;
+}
+
+.back-button:hover {
+  background: rgba(108, 92, 231, 0.3);
+  border-color: rgba(108, 92, 231, 0.6);
+  transform: translateX(-3px);
+}
+
+.back-button svg {
+  font-size: 20px;
+}
+
+/* Logo */
+.navbar-logo {
+  height: 45px !important;
+  width: auto;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  object-fit: contain;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+/* User Profile Icon */
+.user-profile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 15px;
+  transition: all 0.3s ease;
+}
+
+.user-profile-icon:hover {
+  transform: scale(1.1);
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6c5ce7;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+}
+
+.profile-avatar-icon {
+  font-size: 40px !important;
+  color: #a29bfe;
+}
+
+/* Logout Button */
+.logout-btn {
+  margin-left: 15px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
 }

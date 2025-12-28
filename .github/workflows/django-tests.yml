@@ -1,0 +1,74 @@
+name: Django API Tests
+
+on:
+  push:
+    branches: [ main, master, new_frontend ]
+  pull_request:
+    branches: [ main, master, new_frontend ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      run: |
+        cd backend
+        python manage.py makemigrations
+        python manage.py migrate
+    
+    - name: Run tests
+      run: |
+        cd backend
+        echo "=== Running Core Feature Tests ==="
+        python manage.py test core.tests.VotingAPITestCase --verbosity=2
+        python manage.py test core.tests.CommentAPITestCase --verbosity=2
+        python manage.py test core.tests.BestAnswerAPITestCase --verbosity=2
+        python manage.py test core.tests.ReportAPITestCase --verbosity=2
+        python manage.py test core.tests.TagAPITestCase --verbosity=2
+        
+        echo "=== Running Security & Permission Tests ==="
+        python manage.py test users.tests.AuthenticationAPITestCase --verbosity=2
+        python manage.py test users.tests.ProfilePictureUploadTestCase --verbosity=2
+        python manage.py test users.tests.PermissionSecurityTestCase --verbosity=2
+        
+        echo "=== Running New Feature Tests ==="
+        python manage.py test answers.tests.AnswerEditDeleteTestCase --verbosity=2
+        python manage.py test answers.tests.InstructorBestAnswerTestCase --verbosity=2
+        python manage.py test answers.tests.LogoutTestCase --verbosity=2
+        python manage.py test answers.tests.RoleSelectionTestCase --verbosity=2
+        
+        echo "=== Running Role Permission Tests ==="
+        python manage.py test questions.tests.InstructorPermissionsTestCase --verbosity=2
+        python manage.py test questions.tests.StudentPermissionsTestCase --verbosity=2
+    
+    - name: Generate test coverage report
+      run: |
+        cd backend
+        pip install coverage
+        coverage run --source='core' manage.py test core
+        coverage report
+        coverage html
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-python-${{ matrix.python-version }}
+        path: backend/htmlcov/

@@ -1,6 +1,6 @@
 import React from "react";
 import Form from "../components/FormSign";
-import "./login.css"; 
+import "./login.css";
 
 const SigninPage: React.FC = () => {
   return (
@@ -14,7 +14,7 @@ const SigninPage: React.FC = () => {
 
       {/* Login content */}
       <div className="form-container">
-        <h1>Login</h1>
+        <h1 className="login-title">Login</h1>
         <Form />
       </div>
     </div>
