@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import "./Navbar.css";
+import "./navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
