@@ -27,7 +27,6 @@ urlpatterns = [
     path('api/', include('core.urls')),  # Core features: voting, comments, reports, tags, notifications
 ]
 
-# Serve media files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+# Serve media files in development AND production
+# Note: For high-traffic production, use cloud storage (S3, Cloudinary)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
